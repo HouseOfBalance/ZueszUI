@@ -1,7 +1,7 @@
 getgenv().ScriptSettings = {
     NoUi = true,
     CustomSettings = {
-        FarmCoin = false -- Auto Farm
+        FarmCoin = true -- Auto Farm
     }
 }
 
