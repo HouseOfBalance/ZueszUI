@@ -1,1796 +1,1155 @@
-local a = Instance.new("UIStroke")
-local a = Instance.new("UICorner")
-local a = game.Players.LocalPlayer
-pcall(
-    game.HttpGet,
-    game,
-    setmetatable(
-        {},
-        {__tostring = function()
-                print("Kick Player")
-                return ""
-            end}
-    )
-)
-local a = {print, warn, error, writefile, makefolder, rconsoleprint, setclipboard, rconsoleerr, rconsolewarn}
-local b = {"githubusercontent", "NOOB_SCRIPT20002"}
-for a, a in pairs(a) do
-    local c
-    c =
-        hookfunction(
-        a,
-        function(...)
-            local a = {...}
-            for c, d in pairs(a) do
-                for b, b in pairs(b) do
-                    if
-                        string.find(string.lower(tostring(c)), string.lower(tostring(b))) or
-                            string.find(string.lower(tostring(d)), string.lower(tostring(b)))
-                     then
-                        a = " So Let's raise the bar"
-                        while true do
+getgenv().ScriptSettings = {
+    NoUi = true,
+    CustomSettings = {
+        FarmCoin = false -- Auto Farm
+    }
+}
+
+
+getfenv().LPH_NO_VIRTUALIZE = function(f) return f end;
+getfenv().LPH_JIT = function(f) return f end;
+
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kiet1308/CTE-PUBLIC/main/UILIB.lua"))()
+local Settings = {}
+
+local plr = game.Players.LocalPlayer
+local SaveFileName = getgenv().SaveFileName or plr.Name.."_PET99.json"
+
+function SaveSettings()
+    local HttpService = game:GetService("HttpService")
+    if not isfolder("CTE HUB") then
+        makefolder("CTE HUB")
+    end
+    writefile("CTE HUB/" .. SaveFileName, HttpService:JSONEncode(Settings))
+end
+
+function ReadSetting() 
+    local s,e = pcall(function() 
+        local HttpService = game:GetService("HttpService")
+        if not isfolder("CTE HUB") then
+            makefolder("CTE HUB")
+        end
+        return HttpService:JSONDecode(readfile("CTE HUB/" .. SaveFileName))
+    end)
+    if s then return e 
+    else
+        SaveSettings()
+        return ReadSetting()
+    end
+end
+Settings = ReadSetting()
+
+local StoppedTp = false
+getgenv().CauCa = true
+
+if not getgenv().Tasks then 
+    getgenv().Tasks = {}
+    Tasks.__index = Tasks
+    
+    function Tasks.new(name,func)
+        local obj = {
+            Name = name,
+            Function = func
+        }
+        setmetatable(obj, Tasks)
+        return obj
+    end
+    
+    function Tasks:Stop() 
+        if not self:IsRunning() then return end
+        if self.Thread then 
+            task.cancel(self.Thread)
+        end
+        if self.ForceStoped then 
+            self.ForceStoped()
+        end
+    end
+    function Tasks:Start() 
+        if self:IsRunning() then return end
+        self.Thread = task.spawn(self.Function)
+        return self
+    end
+    
+    function Tasks:IsRunning() 
+        if not self.Thread then return false end
+        return coroutine.status(self.Thread) ~= "dead"
+    end
+end
+
+if not getgenv().ListTask then 
+    getgenv().ListTask = {}
+end
+
+local TaskHandler = {}
+
+function TaskHandler:AddTask(Name, func)
+    ListTask[Name] = Tasks.new(name,func)
+    return ListTask[Name]
+end
+
+function TaskHandler:StopTask(Name)
+    if not ListTask[Name] then return end
+    ListTask[Name]:Stop()
+end
+
+function TaskHandler:CancelAll()
+    for k, v in pairs(ListTask) do
+        v:Stop()
+    end
+end
+TaskHandler:CancelAll()
+
+table.clear(getgenv().ListTask)
+getgenv().ListTask = {}
+
+local ScriptRunning = true
+TaskHandler:AddTask("AutoSave",function() 
+    while wait(2) do 
+        SaveSettings()
+    end
+end):Start().ForceStoped = function() 
+    ScriptRunning = false
+end
+
+
+local plr = game.Players.LocalPlayer
+
+function Tap() 
+    game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Click"):FireServer(Ray.new(Vector3.new(1378.8731689453125, 75.38618469238281, -4397.716796875), Vector3.new(0.8105669021606445, -0.5571429133415222, -0.18048004806041718)))
+    game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Instancing_InvokeCustomFromClient"):InvokeServer("AdvancedFishing","Clicked")
+end 
+function ThaCan(pos) 
+    if not pos then 
+        pos = Vector3.new(tonumber("1448."..plr.UserId), 61.625038146972656, tonumber("-4409."..plr.UserId))
+    end
+    game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Click"):FireServer(Ray.new(Vector3.new(1378.8731689453125, 75.38618469238281, -4397.716796875), Vector3.new(0.8105669021606445, -0.5571429133415222, -0.18048004806041718)))
+
+
+    game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Instancing_FireCustomFromClient"):FireServer("AdvancedFishing","RequestReel")
+
+
+    game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Instancing_FireCustomFromClient"):FireServer("AdvancedFishing","RequestCast",pos)
+
+
+end
+function IsFishingGuiEnabled() 
+    local s,e = pcall(function() 
+        return game:GetService("Players").LocalPlayer.PlayerGui._INSTANCES.FishingGame
+    end)
+    if not s then return false end
+    
+    return e.Enabled
+end
+
+function IsPlayerFishing() 
+    local s,e = pcall(function() 
+        if plr.Character.Model.Rod:FindFirstChild("FishingLine") then 
+            return plr.Character.Model.Rod:FindFirstChild("FishingLine")
+        end
+        return false
+    end)
+    if not s then return false end
+    return e
+end
+getgenv().Time = 1.1
+function CheckThaCan() 
+    local Line = IsPlayerFishing()
+    if not Line:FindFirstChild("Value") then 
+        Instance.new("NumberValue",Line).Value = tick()
+    else
+        if Line then 
+            for k,v in game.ReplicatedStorage.__DIRECTORY.FishingRods:GetChildren() do 
+                if v:FindFirstChild("Model") and v:IsA("ModuleScript") and v.Model:FindFirstChild("Rod") then 
+                    if Line.Parent.MeshId == v.Model.Rod.MeshId then
+                        if tick() - Line.Value.Value > require(v).MinFishingTime * getgenv().Time then 
+                            return true
+                        else
+                            return false
                         end
+                        break
+                    end
+                end
+            end
+        end
+    end
+    
+end
+local plr = game.Players.LocalPlayer
+function GetPlayerRobber() 
+    local s,e = pcall(function() 
+        for k,v in workspace.__THINGS.__INSTANCE_CONTAINER.Active.AdvancedFishing.Bobbers:GetChildren() do 
+            if v:FindFirstChild("Bobber") then 
+                -- if (#v.Bobber:GetJoints() >= 1 and v.Bobber:GetJoints()[1]:IsDescendantOf(plr.Character)) or (v.Bobber.Position - Pos).magnitude < 10 then 
+                --     return v.Bobber
+                -- end
+                local Number = tonumber("1448."..plr.UserId)
+                
+
+                if math.abs(v.Bobber.Position.X - tonumber("1448."..plr.UserId)) < 0.001 or  math.abs(v.Bobber.Position.z - tonumber("-4409."..plr.UserId)) < 0.001 then 
+                    return v.Bobber
+                end
+            end
+        end
+    end)
+    if not s then return false end
+    return e
+end
+function GetNearestTeleport() 
+    local s,e = pcall(function() 
+        local NearestTeleport
+        for k,v in workspace.__THINGS.Instances:GetChildren() do 
+            if v:FindFirstChild("Teleports") then 
+                if v.Teleports:FindFirstChild("Leave") then 
+                    if not NearestTeleport then 
+                        NearestTeleport = v
+                    end
+                    if plr:DistanceFromCharacter(v.Teleports.Leave.Position) < plr:DistanceFromCharacter(NearestTeleport.Teleports.Leave.Position) then 
+                        NearestTeleport = v
+                    end
+                end
+            end
+        end
+        return NearestTeleport
+    end)
+
+    if not s then return nil end
+    return e
+end
+
+function IsPlayerInMapCauCa() 
+    if game.Workspace:FindFirstChild("Map") then return false end
+    
+    local s,e = pcall(function() 
+        if workspace.__THINGS.__INSTANCE_CONTAINER.Active:FindFirstChild("AdvancedFishing") then 
+            if plr:DistanceFromCharacter(Vector3.new(1381.8416748046875, 64.95339965820312, -4451.9794921875)) < 500 then 
+                return true
+            end
+        end
+    end)
+
+    if not s then return false end
+    return e
+end
+function Noclip()
+    for i, v in ipairs(plr.Character:GetDescendants()) do
+        if v:IsA("BasePart") and v.CanCollide == true then
+            v.CanCollide = false
+        end
+    end
+end
+game:GetService("RunService").Stepped:Connect(function()
+    if getgenv().noclip then
+        if plr.Character ~= nil then
+            Noclip()
+        end
+    end
+end)
+spawn(function()
+    while wait(2) do
+        pcall(function()
+            if noclip and not plr.Character.HumanoidRootPart:FindFirstChild("coems") then
+                local BV = Instance.new("BodyVelocity", plr.Character.HumanoidRootPart)
+                BV.Name = "coems"
+                BV.Velocity = Vector3.new(0, 0, 0)
+                BV.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+            elseif not noclip then 
+                if plr.Character.HumanoidRootPart:FindFirstChild("coems") then 
+                    plr.Character.HumanoidRootPart:FindFirstChild("coems"):Destroy()
+                end
+            end
+        end)
+    end
+end)
+
+-- local s,e = pcall(function() 
+--     print(game:GetService("RunService"):GetAllBoundInfo())
+--     for k,v in game:GetService("RunService"):GetAllBoundInfo() do print(k,v) end
+    
+-- end)
+-- print(s,e)
+-- if game:GetService("ReplicatedFirst"):FindFirstChild("Blunder") then 
+--     game:GetService("ReplicatedFirst"):FindFirstChild("Blunder"):Destroy()
+--     print("Xoa r")
+-- end
+
+function BoostFps() 
+    StopCheckPet = true
+    task.spawn(function() 
+        if game:GetService("Players").LocalPlayer.PlayerScripts:FindFirstChild("Parallel Pet Actors") then 
+            game:GetService("Players").LocalPlayer.PlayerScripts:FindFirstChild("Parallel Pet Actors"):Destroy()
+        end
+        plr.PlayerScripts.Scripts:Destroy()
+        -- plr.PlayerScripts.Scripts.Game["Breakable VFX (Enchants, etc.)"]:Destroy()
+        game.Workspace.Map:Destroy()
+        for k,v in game.Workspace:GetChildren() do 
+            if v.Name ~= plr.Name then 
+                pcall(function() 
+                    v:Destroy()
+                end)
+            end
+        end
+        for k,v in plr.PlayerGui:GetChildren() do v:Destroy() end
+        -- if game:GetService("Players").LocalPlayer.PlayerScripts:FindFirstChild("Scripts") then 
+        --     for k,v in game:GetService("Players").LocalPlayer.PlayerScripts:FindFirstChild("Scripts"):GetChildren() do 
+        --         if v.Name ~= "Core" then
+        --             if v.Name == "Game" then 
+        --                 for k,v in v:GetChildren() do 
+        --                     if v.Name ~= "Orbs Frontend" and v.Name ~= "Lootbags Frontend" then 
+        --                         v:Destroy()
+        --                     end
+        --                 end
+        --             else
+        --                 v:Destroy()
+        --             end
+        --         end
+                
+        --     end
+        --     --game:GetService("Players").LocalPlayer.PlayerScripts:FindFirstChild("Scripts"):Destroy()
+        -- end
+        --game.ReplicatedStorage.Library:Destroy()
+        -- for k,v in game:GetService("Players").LocalPlayer.PlayerScripts.Scripts:GetChildren() do 
+        --     if v.Name ~= "Game" then 
+        --         v:Destroy()
+        --     end
+        -- end
+        -- for k,v in game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.Game:GetChildren() do 
+        --     if not table.find({
+        --         "Giftbags Frontend",
+        --          "Lootbags Frontend",
+        --         "Orbs Frontend",
+        --      },v.Name) then 
+        --         v:Destroy()
+        --     end
+        -- end
+        -- for k,v in game.Workspace:GetChildren() do 
+        --     if v.Name ~= plr.Name and v.Name ~= "__DEBRIS" and v.Name ~= "__THINGS" then 
+        --         pcall(function() 
+        --             v:Destroy()
+        --         end)
+        --     end
+        -- end
+        -- for k,v in game.Workspace["__DEBRIS"]:GetChildren() do 
+        --     v:Destroy()
+        -- end
+        
+        -- for k,v in game.Workspace["__DEBRIS"]:GetChildren() do 
+        --     if v.Name ~= "Pets" and v.Name ~="Orbs" and v.Name ~="Lootbags" then 
+        --         v:Destroy()
+        --     end
+        -- end
+
+        
+        -- pcall(function() 
+        --     game.Players.LocalPlayer.PlayerScripts.Scripts.Game.Breakables["Breakables Frontend"]:Destroy()
+        --     game.Workspace["__THINGS"].Breakables:Destroy()
+        -- end)
+
+
+        
+
+        
+
+        local Orbs = {}
+        local Lootbags = {}
+    
+       
+    
+        game.ReplicatedStorage.Network["Orbs: Create"].OnClientEvent:Connect(function(v) 
+            for k,v in v do 
+                table.insert(Orbs,v.id)
+            end
+        end)
+
+        game.ReplicatedStorage.Network:WaitForChild("Lootbags_Create").OnClientEvent:Connect(function(v) 
+            table.insert(Lootbags,v.uid)
+        end)
+        print("DOne")
+        while wait(3) do 
+            game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Orbs: Collect"):FireServer({
+                Orbs
+            })
+            game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Orbs: Collect"):FireServer({
+                Lootbags
+            })
+            table.clear(Orbs)
+            table.clear(Lootbags)
+        end
+    end)
+end
+function ListToOb(tabl, tf)
+    local out = {}
+    for k, v in pairs(tabl) do
+        if tf then
+            out[v] = true
+        else
+            out[v] = false
+        end
+    end
+    return out
+end
+function SetupTF(TF,Name) 
+    local ListTF = ListToOb(TF)
+    
+    if not Settings[Name] then Settings[Name] = ListTF else  for k,v in pairs(Settings[Name]) do 
+        ListTF[k]=v
+    end Settings[Name] = ListTF end
+    return ListTF
+end
+
+function GetTableQuest() 
+    for k,v in getgc() do 
+        if type(v) == "function" then 
+            if tostring(getfenv(v).script) == "Ranks" then 
+                if #debug.getconstants(v) > 50 and #debug.getconstants(v) < 100 then 
+                    for k,v in debug.getupvalues(v) do 
+                        if type(v) == "table" then 
+                            for k,v2 in v do 
+                                if type(v2) == "table" and pcall(function() return v2.UID end) and v2.UID then
+                                    getgenv().QuestTable = v
+                                    break
+                                end
+                            end
+                        end
+                    end
+                    break
+                end
+            end
+        end
+        if getgenv().QuestTable then break end
+    end
+    return getgenv().QuestTable
+end
+function GetGoalsTable() 
+    local tvk = require(game:GetService("ReplicatedStorage").Library.Client.RankCmds)
+    local Goals = getupvalues(tvk.MakeTitle)[2].Goals
+    local ReturnedGoalTable = {}
+    for k,v in Goals do 
+        ReturnedGoalTable[v] = k
+    end
+    return Goals,ReturnedGoalTable
+end
+function GetTablePlayerPet() 
+    for k,v in getgc() do 
+        if type(v) == "function" then 
+            if tostring(getfenv(v).script) == "PlayerPet" then
+                if debug.getinfo(v).name == "Get" then 
+                    return getupvalue(v,1)
+                end
+                
+            end
+        end
+    end
+end
+function InstantTpPet() 
+    local List = {}
+    for k,v in GetTablePlayerPet() do 
+        game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Pets_Unfavorite"):FireServer(k)
+        List[k] = {
+            ["targetValue"] = "3177473860",
+            ["targetType"] = "Player"
+        }
+    end
+    game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Pets_ToggleFavoriteMode"):FireServer()
+
+    game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Pets_SetTargetBulk"):FireServer(List)
+end
+
+function GetTablePlayerPet() 
+    for k,v in getgc() do 
+        if type(v) == "function" then 
+            if tostring(getfenv(v).script) == "PlayerPet" then
+                if debug.getinfo(v).name == "Get" then 
+                    return getupvalue(v,1)
+                end
+            end
+        end
+    end
+end
+local old = require(game.ReplicatedStorage.Library.Client.PlayerPet).CalculateSpeedMultiplier
+require(game.ReplicatedStorage.Library.Client.PlayerPet).CalculateSpeedMultiplier = function(...) 
+    if ScriptRunning and Settings.FarmCoin then 
+        return 1000
+    end
+    return old(...)
+end
+local old = require(game.ReplicatedStorage.Library.Client.UpgradeCmds).GetPower
+require(game.ReplicatedStorage.Library.Client.UpgradeCmds).GetPower = function(...)
+    local a = ... 
+    if a == "Magnet" and ScriptRunning then 
+        return 1000
+    end
+    return old(...)
+end
+local PlayerPet = GetTablePlayerPet()
+local PlayerPetIndex = {}
+local StopCheckPet = false
+spawn(function() 
+    while true and not StopCheckPet do 
+        PlayerPetIndex = {}
+        for k,v in PlayerPet do 
+            table.insert(PlayerPetIndex,k)
+        end
+        wait(5)
+    end
+end)
+
+
+
+local ListFeature = {}
+
+function SetFeatureState(Name,State) 
+    local Task = ListTask[Name]
+    if Task then 
+        Settings[Name] = State
+        if State then 
+            if not Task:IsRunning() then 
+                Task:Start()
+            end
+        else
+            Task:Stop()
+        end
+    end
+end
+function SetFeatureFunction(Name,func,Default) 
+    Default = Settings[Name]
+    local Task = TaskHandler:AddTask(Name,func)
+    ListFeature[Name] = Task
+    if Default then 
+        Settings[Name] = Default
+        Task:Start()
+    end
+    return Task
+end
+
+function TP(pos) 
+    if not game.Workspace:FindFirstChild("Map") then 
+        local NearestTeleport = GetNearestTeleport()
+        if NearestTeleport then 
+            if plr:DistanceFromCharacter(NearestTeleport.Teleports.Leave.Position) < 1000 then 
+                plr.Character.HumanoidRootPart.CFrame = CFrame.new(NearestTeleport.Teleports.Leave.Position)
+                wait(3)
+            end
+        end
+    end
+    plr.Character.HumanoidRootPart.CFrame = pos
+end
+
+SetFeatureFunction("CauCa",function() 
+    while wait() do
+        if not StoppedTp then 
+            if not IsPlayerInMapCauCa() then 
+                if not game.Workspace:FindFirstChild("Map") then 
+                    local NearestTeleport = GetNearestTeleport()
+                    if NearestTeleport then 
+                        if plr:DistanceFromCharacter(NearestTeleport.Teleports.Leave.Position) < 1000 then 
+                            plr.Character.HumanoidRootPart.CFrame = CFrame.new(NearestTeleport.Teleports.Leave.Position)
+                            wait(3)
+                        end
+                    end
+                else
+                    if workspace.__THINGS.Instances:FindFirstChild("AdvancedFishing") then 
+                        if workspace.__THINGS.Instances.AdvancedFishing:FindFirstChild("Teleports") and workspace.__THINGS.Instances.AdvancedFishing.Teleports:FindFirstChild("Enter") then 
+                            plr.Character.HumanoidRootPart.CFrame = CFrame.new(workspace.__THINGS.Instances.AdvancedFishing.Teleports.Enter.Position)
+                            wait(3)
+                        end
+                    end
+                end
+            else
+                if IsFishingGuiEnabled() then 
+                    task.spawn(Tap)
+                    task.spawn(Tap)
+                    wait()
+                else
+                    if not IsPlayerFishing() then 
+                        ThaCan()
+                        pcall(function() 
+                            plr.Character.Model.Rod:WaitForChild("FishingLine",2)
+                        end)
+                        getgenv().Start = tick()
+                    else
+                        local Robber = GetPlayerRobber()
+                        if Robber then
+                            if Robber:FindFirstChild("ReadyToCheck") then
+                                if math.abs((Robber.CFrame.Y - math.floor(Robber.CFrame.Y)) - 0.625) > 0.1 then 
+                                    ThaCan()
+                                    if getgenv().Start then print(tick() - getgenv().Start) end
+                                end
+                            else
+                                if math.abs((Robber.CFrame.Y - math.floor(Robber.CFrame.Y)) - 0.625) < 0.03 then 
+                                    Instance.new("BoolValue",Robber).Name = "ReadyToCheck"
+                                end
+                            end
+                        else
+                            pcall(function() 
+                                if not plr.Character.Model.Rod.FishingLine:FindFirstChild("Value") then 
+                                    Instance.new("NumberValue",plr.Character.Model.Rod.FishingLine).Value = tick()
+                                end
+                                if tick() - plr.Character.Model.Rod.FishingLine.Value.Value > 4 then 
+                                    ThaCan()
+                                end
+                            end)
+                        end
+                        -- if not plr.Character.Model.Rod:FindFirstChild("Sound") then 
+                        --     ThaCan()
+                        --     wait(1)
+                        -- end
+                        -- if CheckThaCan() then 
+                        --     ThaCan()
+                        --     wait(1)
+                        -- end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+local StringMapData = [[
+    {"81 | Empyrean Dungeon":{"p":"1070,-36,4095"},"9 | Misty Falls":{"p":"376,14,29"},"63 | Frost Mountains":{"p":"1210,14,2689"},"56 | Fairytale Castle":{"p":"258,14,2471"},"13 | Dark Forest":{"p":"533,14,264"},"50 | Fire Dojo":{"p":"1093,14,2119"},"41 | Hot Springs":{"p":"663,14,1708"},"69 | Golden Road":{"p":"733,14,3219"},"28 | Shanty Town":{"p":"667,14,1019"},"87 | Toys and Blocks":{"p":"96,14,4291"},"77 | Haunted Mansion":{"p":"573,14,3740"},"40 | Ski Town":{"p":"663,14,1521"},"79 | Dungeon":{"p":"1070,-36,3764"},"74 | Witch Marsh":{"p":"259,14,3567"},"44 | Obsidian Cave":{"p":"1113,14,1734"},"78 | Dungeon Entrance":{"p":"909,-36,3740"},"64 | Ice Sculptures":{"p":"1210,14,2863"},"10 | Mine":{"p":"216,14,55"},"4 | Green Forest":{"p":"690,14,-204"},"37 | Snow Village":{"p":"1122,14,1470"},"90 | Clouds":{"p":"-64,114,4851"},"67 | Polar Express":{"p":"1050,14,3219"},"59 | Cozy Village":{"p":"576,14,2665"},"62 | Colorful Mountains":{"p":"1052,14,2665"},"1 | Spawn":{"p":"247,14,-205"},"58 | Fairy Castle":{"p":"416,14,2664"},"57 | Royal Kingdom":{"p":"258,14,2640"},"5 | Autumn":{"p":"848,14,-181"},"97 | Heaven Golden Castle":{"p":"-64,114,5962"},"72 | Runic Altar":{"p":"258,14,3245"},"47 | Underworld Bridge":{"p":"1418,14,1929"},"84 | Gummy Forest":{"p":"578,14,4291"},"83 | Cotton Candy Forest":{"p":"738,14,4291"},"46 | Underworld":{"p":"1417,14,1758"},"65 | Snowman Town":{"p":"1210,14,3021"},"43 | Volcano":{"p":"964,14,1734"},"34 | Grand Canyons":{"p":"812,14,1257"},"11 | Crystal Caverns":{"p":"216,14,238"},"70 | No Path Forest":{"p":"574,14,3219"},"12 | Dead Forest":{"p":"375,14,264"},"24 | Palm Beach":{"p":"811,14,785"},"14 | Mushroom Field":{"p":"693,14,265"},"15 | Enchanted Forest":{"p":"851,14,290"},"98 | Colorful Clouds":{"p":"-64,114,6120"},"17 | Jungle":{"p":"695,14,499"},"16 | Crimson Forest":{"p":"851,14,473"},"18 | Jungle Temple":{"p":"535,14,499"},"19 | Oasis":{"p":"373,14,499"},"80 | Treasure Dungeon":{"p":"1070,-36,3937"},"20 | Beach":{"p":"215,14,499"},"75 | Haunted Forest":{"p":"259,14,3731"},"55 | Fairytale Meadows":{"p":"258,14,2312"},"94 | Cloud Palace":{"p":"-64,114,5488"},"52 | Bamboo Forest":{"p":"575,14,2121"},"27 | Pirate Tavern":{"p":"825,14,1019"},"49 | Metal Dojo":{"p":"1259,14,2121"},"32 | Red Desert":{"p":"513,14,1257"},"3 | Castle":{"p":"534,14,-234"},"30 | Fossil Digsite":{"p":"362,14,1043"},"22 | Shipwreck":{"p":"374,-36,785"},"39 | Ice Rink":{"p":"820,14,1494"},"88 | Carnival":{"p":"-64,14,4316"},"23 | Atlantis":{"p":"535,-36,785"},"25 | Tiki":{"p":"971,14,810"},"26 | Pirate Cove":{"p":"971,14,994"},"68 | Firefly Cold Forest":{"p":"891,14,3219"},"29 | Desert Village":{"p":"513,14,1019"},"33 | Wild West":{"p":"663,14,1257"},"60 | Rainbow River":{"p":"735,14,2665"},"38 | Icy Peaks":{"p":"969,14,1494"},"86 | Sweets":{"p":"256,14,4291"},"48 | Underworld Castle":{"p":"1417,14,2095"},"99 | Rainbow Road":{"p":"-64,158,6432"},"36 | Mountains":{"p":"1122,14,1282"},"31 | Desert Pyramids":{"p":"362,14,1232"},"95 | Heaven Gates":{"p":"-64,114,5648"},"85 | Chocolate Waterfall":{"p":"417,14,4291"},"2 | Colorful Forest":{"p":"372,14,-204"},"61 | Colorful Mines":{"p":"893,14,2665"},"93 | Cloud Houses":{"p":"-64,114,5327"},"45 | Lava Forest":{"p":"1262,14,1734"},"35 | Safari":{"p":"965,14,1257"},"91 | Cloud Garden":{"p":"-64,114,5008"},"92 | Cloud Forest":{"p":"-64,114,5166"},"54 | Flower Field":{"p":"258,14,2146"},"66 | Ice Castle":{"p":"1210,14,3194"},"21 | Coral Reef":{"p":"215,-36,759"},"51 | Samurai Village":{"p":"735,14,2121"},"53 | Zen Garden":{"p":"417,14,2121"},"6 | Cherry Blossom":{"p":"848,14,3"},"82 | Mythic Dungeon":{"p":"1070,-36,4268"},"76 | Haunted Graveyard":{"p":"413,14,3740"},"8 | Backyard":{"p":"534,14,22"},"7 | Farm":{"p":"693,14,28"},"73 | Wizard Tower":{"p":"258,14,3412"},"96 | Heaven":{"p":"-64,114,5805"},"71 | Ancient Ruins":{"p":"416,14,3219"},"89 | Theme Park":{"p":"-64,14,4488"}}
+]]
+
+local MapPosition = game:GetService("HttpService"):JSONDecode(StringMapData)
+
+local MapData = {}
+local MapNames = {}
+table.insert(MapNames,"VIP")
+MapData["VIP"] = {
+    Name = "VIP",
+    Parent = "Spawn",
+    CFrame = CFrame.new(214.229645, 27.7442703, -587.279358, 1, 0, 0, 0, 1, 0, 0, 0, 1)
+}
+for k,v in MapPosition do
+    local MapName = tostring(string.gsub(string.match(k, "%D+"), " | ", ""))
+    local Level = tonumber(string.match(k, "%d+"))
+    if Level and MapName and MapPosition[k] then 
+        local cf = Vector3.new(unpack(string.split(MapPosition[k].p, ",")))
+        MapData[k] = {
+            Name = MapName,
+            Level = Level,
+            FolderName = k,
+            CFrame = CFrame.new(cf) * CFrame.new(0,3,0),
+            --TeleportPosition = v.PERSISTENT.Teleport.Position
+        }
+    
+        table.insert(MapNames,k)
+    end
+end
+
+
+if not getgenv().Breakables then 
+    getgenv().Breakables = {}
+    getgenv().BreakableIdList = {}
+end
+
+
+-- for k,v in getgenv().Breakables["VIP"] do
+--     game.Workspace.__THINGS.Breakables:FindFirstChild(v):FindFirstChildOfClass("MeshPart").Transparency = 1
+-- end
+
+getgenv().Tvk = function(...) 
+    local v = ...
+    if v.Breakables_Created then 
+        for k,v in v.Breakables_Created do 
+            for k,v in v do 
+                local ParentUid = v.parentID
+                local BreakabeId = v.id
+                if string.match(BreakabeId,"Diamond") and ParentUid == "Spawn" then ParentUid = "VIP" end
+                if not ParentUid then return end
+                if not Breakables[ParentUid] then 
+                    Breakables[ParentUid] = {}
+                end
+                Breakables[ParentUid][v.uid] = v.uid
+                BreakableIdList[v.uid] = ParentUid
+                --print("Added")
+            end
+        end
+    end
+    if v.Breakables_Destroyed then 
+        for k,v in v.Breakables_Destroyed do 
+            local Id = v[2]
+            local ParentId = BreakableIdList[Id]
+            if ParentId then 
+                Breakables[ParentId][Id] = nil
+                BreakableIdList[Id] = nil
+            end
+        end
+    end
+    -- for k,v in v do 
+
+    --     if k ~= "Breakables_UpdatePets" then 
+    --         if type(v) == "table" then 
+    --             for k2,v2 in v do 
+    --                 warn(k,k2,v2)
+    --                     for k,v in v[1] do 
+    --                         if type(v) == "table" then 
+    --                             for k,v in v do 
+    --                                 print("Inside",k2,k,v)
+    --                             end
+    --                         else
+    --                             print(k2,k,v)
+    --                         end
+    --                     end
+    --             end
+    --         end        
+    --     end
+    -- end
+end
+if not getgenv().OnClient then 
+    game.ReplicatedStorage.Network.Breakables_BulkUpdate.OnClientEvent:Connect(function(...) 
+        getgenv().Tvk(...)
+    end)
+    getgenv().OnClient = true
+end
+
+
+function BreakableAdded(Breakable) 
+    pcall(function() 
+        local ParentUid = Breakable:GetAttribute("ParentID")
+        local BreakabeId = Breakable:GetAttribute("BreakableID")
+        if string.match(BreakabeId,"Diamond") and ParentUid == "Spawn" then ParentUid = "VIP" end
+        if not ParentUid then return end
+        if not Breakables[ParentUid] then 
+            Breakables[ParentUid] = {}
+        end
+        Breakables[ParentUid][Breakable.Name] = Breakable.Name
+        BreakableIdList[Breakable.Name] = ParentUid
+        --Breakable:Destroy()
+    end)
+end
+
+for k,v in workspace.__THINGS.Breakables:GetChildren() do 
+    BreakableAdded(v)
+end
+
+
+-- workspace.__THINGS.Breakables.ChildAdded:Connect(BreakableAdded)
+-- workspace.__THINGS.Breakables.ChildRemoved:Connect(function(Breakable) 
+--     local id = Breakable:GetAttribute("ParentID")
+--     local BreakabeId = Breakable:GetAttribute("BreakableID")
+--     if string.match(BreakabeId,"Diamond") and id == "Spawn" then id = "VIP" end
+--     if Breakables[id] then 
+--         Breakables[id][Breakable.Name] = nil
+--     end
+-- end)
+
+
+
+
+local TableQuest = GetTableQuest()
+local _,GoalsTable = GetGoalsTable()
+
+SetFeatureFunction("AutoRank",function() 
+    while wait() do
+        if plr.PlayerGui.Starter.Enabled then 
+            game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Pick Starter Pets"):InvokeServer("Cat","Dog")
+            plr.PlayerGui.Starter.Enabled = false
+        end
+        for k,v in TableQuest do 
+            local Type = GoalsTable[v.Type]
+            if v.Progress ~= v.Amount then 
+                if Type == "BREAKABLE" then 
+                    if v.BreakableType == "Coin" then 
+                        plr.Character.HumanoidRootPart.CFrame = CFrame.new(224.70309448242188, 16.33563995361328, -205.99420166015625)
+                        -- for k,v in workspace.__THINGS.Breakables:GetChildren() do 
+                        --     if 
+                        -- end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+local vu = game:GetService("VirtualUser")
+plr.Idled:connect(function()
+    vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    wait(1)
+    vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+end)
+
+function GetSizeOfCoin(coin) return coin.Size.X ^ 2 + coin.Size.Y ^2 + coin.Size.Z ^2 end
+function Length(tabl) local c = 0 for k,v in tabl do c = c + 1 end return c end
+--https://www.roblox.com/games/8737899170/Pet-Simulator-99?privateServerLinkCode=17503465937270991503078054081587
+
+-- local HookList = {}
+
+-- if not getgenv().Hooked then 
+--     local old
+--     old = hookmetamethod(game,"__namecall",function(...) 
+--         local self,arg = ...
+
+--     end) 
+-- end
+
+-- function HookMt() 
+
+
+-- function HookMetaMethod(a,b,func) 
+--     local HookTask
+--     HookTask = TaskHandler:AddTask("HookMt"..tostring(math.random(1,100000)),function() 
+--         local old
+--         old = hookmetamethod(a,b,function(...)
+--             if HookTask:IsRunning() then 
+--                 return func(...)
+--             end
+--             return old(...)
+--         end)
+--     end)
+-- end
+
+LPH_NO_VIRTUALIZE(function() 
+    local old 
+    old = hookmetamethod(game,"__namecall",function(...) 
+        local self,arg = ...
+        if not checkcaller() then 
+            if Settings.FarmCoin and getnamecallmethod() == "FireServer" and ScriptRunning then 
+                if Settings.FarmingMethod ~= "Engine" then 
+                    if tostring(self) == "Breakables_JoinPet" or tostring(self) == "Pets_SetTargetBulk" then 
                         return
                     end
                 end
             end
-            return c(...)
+            if getnamecallmethod() == "FireServer" and tostring(self) == "__BLUNDER" then return end
         end
-    )
-end
-local a = game:GetService("UserInputService")
-local b = game:GetService("TweenService")
-local function c(c, d)
-    local e = nil
-    local f = nil
-    local g = nil
-    local h = nil
-    local function i(a)
-        local a = a.Position - g
-        local a = UDim2.new(h.X.Scale, h.X.Offset + a.X, h.Y.Scale, h.Y.Offset + a.Y)
-        local a = b:Create(d, TweenInfo.new(0.15), {Position = a})
-        a:Play()
+        return old(...)
+    end)
+end)()
+
+
+
+SetFeatureFunction("AutoClaimFreeReward",function() 
+    while true do
+        for i = 1,12 do 
+            game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Redeem Free Gift"):InvokeServer(i) 
+        end
+        wait(60)
     end
-    c.InputBegan:Connect(
-        function(a)
-            if a.UserInputType == Enum.UserInputType.MouseButton1 or a.UserInputType == Enum.UserInputType.Touch then
-                e = true
-                g = a.Position
-                h = d.Position
-                a.Changed:Connect(
-                    function()
-                        if a.UserInputState == Enum.UserInputState.End then
-                            e = false
-                        end
-                    end
-                )
-            end
-        end
-    )
-    c.InputChanged:Connect(
-        function(a)
-            if a.UserInputType == Enum.UserInputType.MouseMovement or a.UserInputType == Enum.UserInputType.Touch then
-                f = a
-            end
-        end
-    )
-    a.InputChanged:Connect(
-        function(a)
-            if a == f and e then
-                i(a)
-            end
-        end
-    )
-end
-if game.CoreGui:FindFirstChild("ZekromHubXUI") then
-    game.CoreGui:FindFirstChild("ZekromHubXUI"):Destroy()
-    game:GetService("CoreGui").ScreenGui:Destroy()
-end
-local d = Instance.new("ScreenGui")
-local e = Instance.new("ImageButton")
-_G.Primary = Color3.fromRGB(43, 43, 43)
-_G.Dark = Color3.fromRGB(20, 16, 16)
-d.Parent = game.CoreGui
-d.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-e.Parent = d
-e.Position = UDim2.new(0.120833337, 0, 0.0952890813, 0)
-e.Size = UDim2.new(0, 50, 0, 50)
-e.BackgroundColor3 = _G.Primary
-e.ImageColor3 = Color3.fromRGB(255, 255, 255)
-e.ImageTransparency = .1
-e.Draggable = true
-e.Active = true
-e.Selectable = true
-e.BackgroundTransparency = .1
-e.Image = "rbxassetid://16275269532"
-e.Visible = false
-local d = Instance.new("UICorner")
-d.Name = "MCNR"
-d.Parent = e
-d.CornerRadius = UDim.new(0, 5)
-e.MouseButton1Down:connect(
-    function()
-        game.CoreGui:FindFirstChild("ZekromHubXUI").Enabled = not game.CoreGui:FindFirstChild("ZekromHubXUI").Enabled
-        e.Visible = false
-    end
-)
-repeat
-    wait(1)
-until game:IsLoaded()
-local d = {}
-function d:Window(f, f, f)
-    local g = {}
-    local g = false
-    local h = false
-    local i = ""
-    local f = f or Enum.KeyCode.RightControl
-    local f = string.gsub(tostring(f), "Enum.KeyCode.", "")
-    local f = Instance.new("ScreenGui")
-    f.Name = "ZekromHubXUI"
-    f.Parent = game.CoreGui
-    f.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    local i = Instance.new("Frame")
-    i.Name = "Main"
-    i.Parent = f
-    i.ClipsDescendants = true
-    i.AnchorPoint = Vector2.new(0.5, 0.5)
-    i.BackgroundColor3 = Color3.fromRGB(20, 16, 16)
-    i.BackgroundTransparency = .1
-    i.Position = UDim2.new(0.5, 0, 0.5, 0)
-    i.Size = UDim2.new(0, 0, 0, 0)
-    i:TweenSize(UDim2.new(0, 555, 0, 352), "Out", "Quad", 0.4, true)
-    local f = Instance.new("UIStroke")
-    local f = Instance.new("UICorner")
-    f.Name = "MCNR"
-    f.Parent = i
-    local f = Instance.new("UICorner")
-    f.Name = "MCNR"
-    f.Parent = BackgroundImage
-    local f = Instance.new("UICorner")
-    f.Name = "lol"
-    f.Parent = Dark
-    local f = Instance.new("Frame")
-    f.Name = "Top"
-    f.Parent = i
-    f.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-    f.Size = UDim2.new(0, 556, 0, 30)
-    f.BackgroundTransparency = 1
-    local j = Instance.new("UICorner")
-    j.Name = "TCNR"
-    j.Parent = f
-    j.CornerRadius = UDim.new(0, 5)
-    local j = Instance.new("TextLabel")
-    j.Name = "ttittles"
-    j.Parent = f
-    j.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    j.BackgroundTransparency = 1
-    j.Position = UDim2.new(0, 30, 0.05, 0)
-    j.Size = UDim2.new(0, 255, 0.05, 25)
-    j.Font = Enum.Font.GothamBold
-    j.Text = "Zekrom Hub X"
-    j.TextSize = 15.000
-    j.TextColor3 = Color3.fromRGB(255, 255, 255)
-    j.TextXAlignment = Enum.TextXAlignment.Left
-    local j = Instance.new("ImageButton")
-    j.Name = "Minimize"
-    j.Parent = i
-    j.BackgroundTransparency = 1
-    j.ImageColor3 = Color3.fromRGB(255, 255, 255)
-    j.Position = UDim2.new(0, 500, 0, 7)
-    j.Size = UDim2.new(0, 30, 0, 30)
-    j.Image = "http://www.roblox.com/asset/?id=15511995461"
-    j.MouseButton1Click:Connect(
-        function()
-            game.CoreGui:FindFirstChild("ZekromHubXUI").Enabled =
-                not game.CoreGui:FindFirstChild("ZekromHubXUI").Enabled
-            e.Visible = true
-        end
-    )
-    local e = Instance.new("Frame")
-    e.Name = "Tab"
-    e.Parent = i
-    e.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-    e.Position = UDim2.new(0, 14, 0, 33)
-    e.BackgroundTransparency = 1
-    e.Size = UDim2.new(0, 138, 0, 307)
-    local j = Instance.new("UIStroke")
-    local j = Instance.new("ScrollingFrame")
-    j.Name = "ScrollTab"
-    j.Parent = e
-    j.Active = true
-    j.BackgroundColor3 = Color3.fromRGB(0, 10, 250)
-    j.Position = UDim2.new(0, 0, 0, 0)
-    j.BackgroundTransparency = 1
-    j.Size = UDim2.new(0, 138, 0, 307)
-    j.ScrollBarThickness = 0
-    local k = Instance.new("UICorner")
-    k.Parent = e
-    k.CornerRadius = UDim.new(0, 5)
-    local e = Instance.new("UIListLayout")
-    e.Name = "PLL"
-    e.Parent = j
-    e.SortOrder = Enum.SortOrder.LayoutOrder
-    e.Padding = UDim.new(0, 2)
-    local k = Instance.new("UIPadding")
-    k.Name = "PPD"
-    k.Parent = j
-    local k = Instance.new("UIStroke")
-    local k = Instance.new("Frame")
-    k.Name = "Page"
-    k.Parent = i
-    k.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    k.Position = UDim2.new(0, 162, 0, 33)
-    k.Size = UDim2.new(0, 380, 0, 308)
-    k.BackgroundTransparency = 1.000
-    local l = Instance.new("UICorner")
-    l.Parent = k
-    l.CornerRadius = UDim.new(0, 3)
-    local l = Instance.new("Frame")
-    l.Name = "MainPage"
-    l.Parent = k
-    l.ClipsDescendants = true
-    l.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    l.BackgroundTransparency = 1.000
-    l.Size = UDim2.new(0, 380, 0, 307)
-    local k = Instance.new("Folder")
-    k.Name = "PageList"
-    k.Parent = l
-    local m = Instance.new("UIPageLayout")
-    m.Parent = k
-    m.SortOrder = Enum.SortOrder.LayoutOrder
-    m.EasingDirection = Enum.EasingDirection.InOut
-    m.EasingStyle = Enum.EasingStyle.Quad
-    m.FillDirection = Enum.FillDirection.Vertical
-    m.Padding = UDim.new(0, 10)
-    m.TweenTime = 0.400
-    m.GamepadInputEnabled = false
-    m.ScrollWheelInputEnabled = false
-    m.TouchInputEnabled = false
-    c(f, i)
-    a.InputBegan:Connect(
-        function(a)
-            if a.KeyCode == Enum.KeyCode.RightControl then
-                if g == false then
-                    g = true
-                    i:TweenSize(UDim2.new(0, 0, 0, 0), "In", "Quad", 0.4, true)
-                else
-                    g = false
-                    i:TweenSize(UDim2.new(0, 556, 0, 350), "Out", "Quad", 0.5, true)
-                end
-            end
-        end
-    )
-    local c = {}
-    function c:Tab(c, f)
-        local g = Instance.new("UIStroke")
-        local g = Instance.new("UICorner")
-        local n = Instance.new("TextButton")
-        local o = Instance.new("TextLabel")
-        local o = Instance.new("UICorner")
-        local p = Instance.new("TextLabel")
-        n.Parent = j
-        n.Name = c .. "Server"
-        n.Text = ""
-        n.BackgroundColor3 = Color3.fromRGB(43, 43, 43)
-        n.BackgroundTransparency = 1
-        n.Size = UDim2.new(0, 136, 0, 30)
-        n.Font = Enum.Font.GothamSemibold
-        n.TextColor3 = Color3.fromRGB(255, 255, 255)
-        n.TextSize = 12.000
-        n.TextTransparency = 0.9
-        p.Parent = n
-        p.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
-        p.BackgroundTransparency = 1.000
-        p.Position = UDim2.new(0, 30, 0, 2)
-        p.Size = UDim2.new(0, 100, 0, 25)
-        p.Font = Enum.Font.GothamSemibold
-        p.Text = "| " .. c
-        p.TextColor3 = Color3.fromRGB(255, 255, 255)
-        p.TextSize = 13.000
-        p.TextXAlignment = Enum.TextXAlignment.Left
-        local p = Instance.new("ImageLabel")
-        p.Name = "LogoIDK"
-        p.Parent = n
-        p.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        p.BackgroundTransparency = 1.000
-        p.Position = UDim2.new(0, 6, 0, 4.5)
-        p.Size = UDim2.new(0, 20, 0, 20)
-        p.Image = f
-        o.CornerRadius = UDim.new(0, 5)
-        o.Parent = n
-        g.CornerRadius = UDim.new(0, 5)
-        g.Parent = n
-        local f = Instance.new("ScrollingFrame")
-        f.Name = c .. "_Page"
-        f.Parent = k
-        f.Active = true
-        f.BackgroundColor3 = Color3.fromRGB(0, 10, 250)
-        f.Position = UDim2.new(0, 0, 0, 0)
-        f.BackgroundTransparency = 1
-        f.Size = UDim2.new(0, 400, 0, 307)
-        f.ScrollBarThickness = 0
-        local c = Instance.new("UICorner")
-        c.Parent = l
-        c.CornerRadius = UDim.new(0, 5)
-        local c = Instance.new("UIPadding")
-        local g = Instance.new("UIListLayout")
-        c.Parent = f
-        g.Padding = UDim.new(0, 3)
-        g.Parent = f
-        g.SortOrder = Enum.SortOrder.LayoutOrder
-        local c = {}
-        function ActivateTab(a)
-            if activeTab then
-                activeTab.BackgroundTransparency = 1
-            end
-            activeTab = a
-            activeTab.BackgroundTransparency = 0.8
-            local a = string.gsub(a.Name, "Server", "") .. "_Page"
-            for b, b in pairs(k:GetChildren()) do
-                if b.Name == a then
-                    m:JumpTo(b)
-                end
-            end
-        end
-        for a, a in pairs(j:GetChildren()) do
-            if a:IsA("TextButton") then
-                table.insert(c, a)
-                a.MouseButton1Click:Connect(
-                    function()
-                        ActivateTab(a)
-                    end
-                )
-            end
-        end
-        if h == false then
-            for a, a in ipairs(c) do
-                b:Create(
-                    a,
-                    TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {BackgroundTransparency = 1}
-                ):Play()
-            end
-            ActivateTab(c[1])
-            h = true
-        end
-        game:GetService("RunService").Stepped:Connect(
-            function()
-                pcall(
-                    function()
-                        f.CanvasSize = UDim2.new(0, 0, 0, g.AbsoluteContentSize.Y + 20)
-                        j.CanvasSize = UDim2.new(0, 0, 0, e.AbsoluteContentSize.Y + 20)
-                    end
-                )
-            end
-        )
-        function d:Notification(a)
-            local c = Instance.new("TextButton")
-            local d = Instance.new("Frame")
-            local e = Instance.new("TextButton")
-            local f = Instance.new("UICorner")
-            local g = Instance.new("TextLabel")
-            local h = Instance.new("TextLabel")
-            local j = Instance.new("TextLabel")
-            local k = Instance.new("UICorner")
-            local l = Instance.new("UIStroke")
-            local m = Instance.new("Frame")
-            c.Name = "NotificationHold"
-            c.Parent = i
-            c.BackgroundColor3 = Color3.new(125, 125, 125)
-            c.BackgroundTransparency = 1
-            c.BorderSizePixel = 0
-            c.Size = UDim2.new(0, 589, 0, 378)
-            c.AutoButtonColor = false
-            c.Font = Enum.Font.SourceSans
-            c.Text = ""
-            c.TextColor3 = Color3.new(125, 0, 125)
-            c.TextSize = 13.000
-            b:Create(
-                c,
-                TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {BackgroundTransparency = 1}
-            ):Play()
-            wait(0.4)
-            d.Name = "NotificationFrame"
-            d.Parent = c
-            d.AnchorPoint = Vector2.new(0.5, 0.5)
-            d.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-            d.BorderColor3 = Color3.new(125, 0, 125)
-            d.BorderSizePixel = 0
-            d.Transparency = 0
-            d.ClipsDescendants = true
-            d.Position = UDim2.new(0, 295, 0, 190)
-            d.Size = UDim2.new(0, 0, 0, 0)
-            d:TweenSize(UDim2.new(0, 400, 0, 250), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, .6, true)
-            k.Name = "NotifCorner"
-            k.Parent = d
-            k.CornerRadius = UDim.new(0, 5)
-            l.Name = "NotifHolderUIStroke"
-            l.Parent = d
-            l.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-            l.Color = Color3.new(125, 0, 125)
-            l.LineJoinMode = Enum.LineJoinMode.Round
-            l.Thickness = 2
-            l.Transparency = 0
-            l.Enabled = true
-            l.Archivable = true
-            e.Name = "OkayBtn"
-            e.Parent = d
-            e.BackgroundColor3 = Color3.fromRGB(190, 190, 190)
-            e.BorderSizePixel = 2
-            e.BorderColor3 = Color3.new(125, 0, 125)
-            e.Position = UDim2.new(0, 125, 0, 190)
-            e.Size = UDim2.new(0, 150, 0, 30)
-            e.AutoButtonColor = true
-            e.Font = Enum.Font.SourceSans
-            e.Text = ""
-            e.TextColor3 = Color3.new(125, 0, 125)
-            e.TextSize = 13.000
-            f.CornerRadius = UDim.new(0, 5)
-            f.Name = "OkayBtnCorner"
-            f.Parent = e
-            g.Name = "OkayBtnTitle"
-            g.Parent = e
-            g.BackgroundColor3 = Color3.new(125, 0, 125)
-            g.BackgroundTransparency = 1.000
-            g.Size = UDim2.new(0, 150, 0, 30)
-            g.Text = "OK"
-            g.Font = Enum.Font.GothamSemibold
-            g.TextColor3 = Color3.fromRGB(0, 0, 0)
-            g.TextSize = 22.000
-            h.Name = "NotificationTitle"
-            h.Parent = d
-            h.BackgroundColor3 = Color3.new(125, 0, 125)
-            h.BackgroundTransparency = 1.000
-            h.Position = UDim2.new(0, 0, 0, 10)
-            h.Size = UDim2.new(0, 400, 0, 25)
-            h.ZIndex = 3
-            h.Font = Enum.Font.GothamSemibold
-            h.Text = "Notification"
-            h.TextColor3 = Color3.fromRGB(240, 10, 10)
-            h.TextSize = 22.000
-            m.Name = "Line"
-            m.Parent = d
-            m.BackgroundColor3 = Color3.new(125, 0, 125)
-            m.BorderSizePixel = 0
-            m.Position = UDim2.new(0, 10, 0, 40)
-            m.Size = UDim2.new(0, 380, 0, 1)
-            j.Name = "NotificationDesc"
-            j.Parent = d
-            j.BackgroundColor3 = _G.SectionColor
-            j.BackgroundTransparency = 1.000
-            j.Position = UDim2.new(0, 10, 0, 80)
-            j.Size = UDim2.new(0, 380, 0, 200)
-            j.Font = Enum.Font.GothamSemibold
-            j.Text = a
-            j.TextScaled = false
-            j.TextColor3 = Color3.new(125, 0, 125)
-            j.TextSize = 16.000
-            j.TextWrapped = true
-            j.TextXAlignment = Enum.TextXAlignment.Center
-            j.TextYAlignment = Enum.TextYAlignment.Top
-            e.MouseEnter:Connect(
-                function()
-                    b:Create(
-                        e,
-                        TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                        {BackgroundColor3 = Color3.fromRGB(34, 34, 34)}
-                    ):Play()
-                end
-            )
-            e.MouseLeave:Connect(
-                function()
-                    b:Create(
-                        e,
-                        TweenInfo.new(.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                        {BackgroundColor3 = Color3.fromRGB(25, 25, 25)}
-                    ):Play()
-                end
-            )
-            e.MouseButton1Click:Connect(
-                function()
-                    d:TweenSize(UDim2.new(0, 0, 0, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quart, .6, true)
-                    wait(0.4)
-                    b:Create(
-                        c,
-                        TweenInfo.new(.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                        {BackgroundTransparency = 1}
-                    ):Play()
-                    wait(.3)
-                    c:Destroy()
-                end
-            )
-        end
-        local c = {}
-        function c:Button(a, c)
-            local d = Instance.new("Frame")
-            local e = Instance.new("UICorner")
-            local g = Instance.new("TextButton")
-            local h = Instance.new("UICorner")
-            local i = Instance.new("Frame")
-            local j = Instance.new("UICorner")
-            d.Name = "Button"
-            d.Parent = f
-            d.BackgroundColor3 = Color3.new(0, 0, 0)
-            d.BackgroundTransparency = 1
-            d.Size = UDim2.new(0, 358, 0, 33)
-            e.CornerRadius = UDim.new(0, 5)
-            e.Parent = d
-            g.Name = "TextBtn"
-            g.Parent = d
-            g.BackgroundColor3 = Color3.fromRGB(43, 43, 43)
-            g.BackgroundTransparency = .8
-            g.Position = UDim2.new(0, 0, 0, 0)
-            g.Size = UDim2.new(0, 379, 0, 33)
-            g.AutoButtonColor = false
-            g.Font = Enum.Font.GothamSemibold
-            g.Text = a
-            g.TextColor3 = Color3.fromRGB(255, 255, 255)
-            g.TextSize = 15.000
-            h.CornerRadius = UDim.new(0, 5)
-            h.Parent = g
-            i.Name = "Black"
-            i.Parent = d
-            i.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-            i.BackgroundTransparency = 1.000
-            i.BorderSizePixel = 0
-            i.Position = UDim2.new(0, 0, 0, 0)
-            i.Size = UDim2.new(0, 379, 0, 33)
-            j.CornerRadius = UDim.new(0, 5)
-            j.Parent = i
-            g.MouseEnter:Connect(
-                function()
-                    b:Create(
-                        i,
-                        TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                        {BackgroundTransparency = 0.7}
-                    ):Play()
-                end
-            )
-            g.MouseLeave:Connect(
-                function()
-                    b:Create(
-                        i,
-                        TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                        {BackgroundTransparency = 1}
-                    ):Play()
-                end
-            )
-            g.MouseButton1Click:Connect(
-                function()
-                    g.TextSize = 0
-                    b:Create(g, TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {TextSize = 15}):Play(
+end)
 
-                    )
-                    c()
-                end
-            )
-        end
-        function c:Toggle(a, c, d)
-            c = c or false
-            local e = c
-            _G.Color = Color3.fromRGB(43, 43, 43)
-            _G.TrueColor = Color3.fromRGB(30, 255, 64)
-            local g = Instance.new("UICorner")
-            local g = Instance.new("UIPadding")
-            local g = Instance.new("UIStroke")
-            local h = Instance.new("TextButton")
-            local i = Instance.new("UICorner")
-            local j = Instance.new("TextLabel")
-            local k = Instance.new("TextButton")
-            local l = Instance.new("UICorner")
-            local m = Instance.new("Frame")
-            local n = Instance.new("UICorner")
-            local o = Instance.new("ImageLabel")
-            h.Name = "Button"
-            h.Parent = f
-            h.BackgroundColor3 = Color3.fromRGB(43, 43, 43)
-            h.BackgroundTransparency = .8
-            h.Size = UDim2.new(0, 379, 0, 46)
-            h.AutoButtonColor = false
-            h.Font = Enum.Font.SourceSans
-            h.Text = ""
-            h.TextColor3 = Color3.fromRGB(0, 0, 0)
-            h.TextSize = 11.000
-            i.CornerRadius = UDim.new(0, 5)
-            i.Parent = h
-            o.Name = "Icon"
-            o.Parent = h
-            o.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            o.BackgroundTransparency = 1.000
-            o.Position = UDim2.new(0, 5, 0, 8)
-            o.Size = UDim2.new(0, 30, 0, 30)
-            o.Image = "rbxassetid://16275269532"
-            j.Parent = h
-            j.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
-            j.BackgroundTransparency = 1.000
-            j.Position = UDim2.new(0, 40, 0, 0)
-            j.Size = UDim2.new(0, 280, 0, 46)
-            j.Font = Enum.Font.GothamSemibold
-            j.Text = "|  " .. a
-            j.TextColor3 = Color3.fromRGB(255, 255, 255)
-            j.TextSize = 15.000
-            j.TextXAlignment = Enum.TextXAlignment.Left
-            k.Name = "ToggleImage"
-            k.Parent = h
-            k.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-            k.BackgroundTransparency = .1
-            k.Position = UDim2.new(0, 320, 0, 13)
-            k.Size = UDim2.new(0, 45, 0, 20)
-            k.Text = ""
-            l.CornerRadius = UDim.new(0, 10)
-            l.Parent = k
-            m.Name = "Circle"
-            m.Parent = k
-            m.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-            m.BackgroundTransparency = .7
-            m.Position = UDim2.new(0, 2, 0, 2)
-            m.Size = UDim2.new(0, 16, 0, 16)
-            n.CornerRadius = UDim.new(0, 10)
-            n.Parent = m
-            k.MouseButton1Click:Connect(
-                function()
-                    if e == false then
-                        e = true
-                        g.Color = _G.TrueColor
-                        m:TweenPosition(UDim2.new(0, 27, 0, 2), "Out", "Sine", 0.2, true)
-                        b:Create(
-                            m,
-                            TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {BackgroundColor3 = _G.TrueColor}
-                        ):Play()
-                    else
-                        e = false
-                        g.Color = _G.Color
-                        m:TweenPosition(UDim2.new(0, 2, 0, 2), "Out", "Sine", 0.2, true)
-                        b:Create(
-                            m,
-                            TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {BackgroundColor3 = Color3.fromRGB(12, 12, 12)}
-                        ):Play()
-                    end
-                    pcall(d, e)
-                end
-            )
-            if c == true then
-                e = true
-                g.Color = _G.TrueColor
-                m:TweenPosition(UDim2.new(0, 27, 0, 2), "Out", "Sine", 0.4, true)
-                b:Create(
-                    m,
-                    TweenInfo.new(0.4, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {BackgroundColor3 = _G.TrueColor}
-                ):Play()
-                pcall(d, e)
-            end
-        end
-        function c:Dropdown(a, c, d)
-            local e = false
-            local g = Instance.new("Frame")
-            local h = Instance.new("UICorner")
-            local i = Instance.new("UICorner")
-            local j = Instance.new("UICorner")
-            local k = Instance.new("TextLabel")
-            local l = Instance.new("ScrollingFrame")
-            local m = Instance.new("UIListLayout")
-            local n = Instance.new("UIPadding")
-            local o = Instance.new("TextButton")
-            local o = Instance.new("TextButton")
-            local p = Instance.new("ImageLabel")
-            local q = Instance.new("UIStroke")
-            g.Name = "Dropdown"
-            g.Parent = f
-            g.BackgroundColor3 = Color3.fromRGB(43, 43, 43)
-            g.BackgroundTransparency = .8
-            g.ClipsDescendants = true
-            g.Size = UDim2.new(0, 379, 0, 38)
-            h.CornerRadius = UDim.new(0, 3)
-            h.Parent = g
-            local f = Instance.new("ImageLabel")
-            f.Name = "Icon"
-            f.Parent = g
-            f.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            f.BackgroundTransparency = 1.000
-            f.Position = UDim2.new(0, 5, 0, 3)
-            f.Size = UDim2.new(0, 30, 0, 30)
-            f.Image = "rbxassetid://15756845500"
-            k.Name = "DropTitle"
-            k.Parent = g
-            k.BackgroundColor3 = Color3.fromRGB(43, 43, 43)
-            k.BackgroundTransparency = 1
-            k.Size = UDim2.new(0, 379, 0, 38)
-            k.Font = Enum.Font.GothamSemibold
-            k.Text = "| " .. a
-            k.TextColor3 = Color3.fromRGB(255, 255, 255)
-            k.TextSize = 15.000
-            k.TextXAlignment = Enum.TextXAlignment.Left
-            k.Position = UDim2.new(0, 40, 0, 0)
-            o.Name = "SelectItems"
-            o.Parent = g
-            o.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-            o.TextColor3 = Color3.fromRGB(255, 255, 255)
-            o.BackgroundTransparency = .1
-            o.Position = UDim2.new(0, 220, 0, 34)
-            o.Size = UDim2.new(0, 155, 0, 30)
-            o.Font = Enum.Font.GothamMedium
-            o.TextSize = 12.000
-            o.Text = "Select"
-            o.ClipsDescendants = true
-            o.TextXAlignment = Enum.TextXAlignment.Left
-            local f = Instance.new("UIPadding")
-            f.Parent = o
-            f.PaddingLeft = UDim.new(0, 15)
-            f.PaddingRight = UDim.new(0, 15)
-            o.AnchorPoint = Vector2.new(0, 3)
-            i.Parent = o
-            i.CornerRadius = UDim.new(0, 5)
-            j.Parent = l
-            j.CornerRadius = UDim.new(0, 5)
-            l.Name = "DropScroll"
-            l.Parent = g
-            l.Active = true
-            l.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-            l.BackgroundTransparency = .1
-            l.BorderSizePixel = 0
-            l.Position = UDim2.new(0, 2, 0, 40)
-            l.Size = UDim2.new(0, 375, 0, 100)
-            l.ScrollBarThickness = 3
-            m.Parent = l
-            m.SortOrder = Enum.SortOrder.LayoutOrder
-            m.Padding = UDim.new(0, 5)
-            n.Parent = l
-            n.PaddingLeft = UDim.new(0, 5)
-            n.PaddingTop = UDim.new(0, 10)
-            for a, a in next, c do
-                local c = Instance.new("TextButton")
-                c.Name = "Item"
-                c.Parent = l
-                c.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-                c.BackgroundTransparency = 1
-                c.Size = UDim2.new(0, 379, 0, 26)
-                c.Font = Enum.Font.GothamSemibold
-                c.Text = tostring(a)
-                c.TextColor3 = Color3.fromRGB(255, 255, 255)
-                c.TextSize = 12.000
-                c.TextTransparency = 0.500
-                c.TextXAlignment = Enum.TextXAlignment.Center
-                c.MouseEnter:Connect(
-                    function()
-                        b:Create(
-                            c,
-                            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {TextTransparency = 0}
-                        ):Play()
-                    end
-                )
-                c.MouseLeave:Connect(
-                    function()
-                        b:Create(
-                            c,
-                            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {TextTransparency = 0.5}
-                        ):Play()
-                    end
-                )
-                c.MouseButton1Click:Connect(
-                    function()
-                        e = false
-                        g:TweenSize(UDim2.new(0, 379, 0, 38), "Out", "Quad", 0.3, true)
-                        b:Create(
-                            p,
-                            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {Rotation = 180}
-                        ):Play()
-                        d(c.Text)
-                        o.Text = c.Text
-                    end
-                )
-            end
-            l.CanvasSize = UDim2.new(0, 0, 0, m.AbsoluteContentSize.Y + 10)
-            o.MouseButton1Click:Connect(
-                function()
-                    if e == false then
-                        e = true
-                        g:TweenSize(UDim2.new(0, 379, 0, 142), "Out", "Quad", 0.3, true)
-                        b:Create(p, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Rotation = 0}):Play(
-
-                        )
-                    else
-                        e = false
-                        g:TweenSize(UDim2.new(0, 379, 0, 38), "Out", "Quad", 0.3, true)
-                        b:Create(
-                            p,
-                            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {Rotation = 180}
-                        ):Play()
-                    end
-                end
-            )
-            local c = {}
-            function c:Add(c)
-                local f = Instance.new("TextButton")
-                f.Name = "Item"
-                f.Parent = l
-                f.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                f.BackgroundTransparency = 1.000
-                f.Size = UDim2.new(0, 379, 0, 26)
-                f.Font = Enum.Font.GothamSemibold
-                f.Text = tostring(c)
-                f.TextColor3 = Color3.fromRGB(255, 255, 255)
-                f.TextSize = 13.000
-                f.TextTransparency = 0.500
-                f.MouseEnter:Connect(
-                    function()
-                        b:Create(
-                            f,
-                            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {TextTransparency = 0}
-                        ):Play()
-                    end
-                )
-                f.MouseLeave:Connect(
-                    function()
-                        b:Create(
-                            f,
-                            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {TextTransparency = 0.5}
-                        ):Play()
-                    end
-                )
-                f.MouseButton1Click:Connect(
-                    function()
-                        e = false
-                        g:TweenSize(UDim2.new(0, 379, 0, 38), "Out", "Quad", 0.3, true)
-                        b:Create(
-                            p,
-                            TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                            {Rotation = 180}
-                        ):Play()
-                        d(f.Text)
-                        k.Text = a .. " : " .. f.Text
-                    end
-                )
-            end
-            function c:Clear()
-                k.Text = tostring(a) .. " : "
-                e = false
-                g:TweenSize(UDim2.new(0, 379, 0, 38), "Out", "Quad", 0.3, true)
-                b:Create(p, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Rotation = 180}):Play(
-
-                )
-                for a, a in next, l:GetChildren() do
-                    if a:IsA("TextButton") then
-                        a:Destroy()
-                    end
-                end
-            end
-            return c
-        end
-        function c:Slider(b, c, d, e, g)
-            local h = {}
-            local i = Instance.new("Frame")
-            local j = Instance.new("Frame")
-            local k = Instance.new("UIStroke")
-            local k = Instance.new("UICorner")
-            local l = Instance.new("ImageLabel")
-            local m = Instance.new("TextLabel")
-            local m = Instance.new("TextLabel")
-            local n = Instance.new("Frame")
-            local o = Instance.new("Frame")
-            local p = Instance.new("Frame")
-            local q = Instance.new("UICorner")
-            local r = Instance.new("UICorner")
-            local s = Instance.new("Frame")
-            local t = Instance.new("TextBox")
-            local u = Instance.new("UIStroke")
-            local v = Instance.new("TextButton")
-            local w = Instance.new("UICorner")
-            local x = Instance.new("UICorner")
-            i.Name = slidertitle or "SliderFrame"
-            i.Parent = f
-            i.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
-            i.BackgroundTransparency = 1.000
-            i.BorderSizePixel = 0
-            i.Size = UDim2.new(0, 379, 0, 60)
-            j.Name = "SliderFrame_2"
-            j.Parent = i
-            j.BackgroundColor3 = Color3.fromRGB(32, 33, 36)
-            j.BackgroundTransparency = .8
-            j.BorderSizePixel = 0
-            j.Position = UDim2.new(0, 1, 0, 1)
-            j.Size = UDim2.new(0, 379, 0, 60)
-            k.Parent = j
-            k.CornerRadius = UDim.new(0, 3)
-            l.Name = "ImageLabel"
-            l.Parent = j
-            l.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
-            l.BackgroundTransparency = 1.000
-            l.BorderSizePixel = 0
-            l.Position = UDim2.new(0, 7.5, 0, 7.5)
-            l.Size = UDim2.new(0, 30, 0, 30)
-            l.Image = "rbxassetid://15756845500"
-            m.Parent = j
-            m.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
-            m.BackgroundTransparency = 1.000
-            m.Position = UDim2.new(0, 45, 0, 5)
-            m.Size = UDim2.new(0, 280, 0, 30)
-            m.Font = Enum.Font.GothamSemibold
-            m.Text = "|  " .. b
-            m.TextColor3 = Color3.fromRGB(255, 255, 255)
-            m.TextSize = 15.000
-            m.TextXAlignment = Enum.TextXAlignment.Left
-            n.Name = "SliderInput"
-            n.Parent = j
-            n.BackgroundColor3 = Color3.fromRGB(39, 40, 41)
-            n.BackgroundTransparency = 0
-            n.BorderSizePixel = 0
-            n.Position = UDim2.new(0, 8, 0, 42)
-            n.Size = UDim2.new(0, 364, 0, 6)
-            r.CornerRadius = UDim.new(0, 100000)
-            r.Parent = n
-            o.Name = "SliderButton"
-            o.Parent = n
-            o.BackgroundColor3 = Color3.fromRGB(39, 40, 41)
-            o.BackgroundTransparency = 1.000
-            o.BorderSizePixel = 0
-            o.Position = UDim2.new(0, 0, 0, -7)
-            o.Size = UDim2.new(0, 300, 0, 25)
-            p.Name = "SliderCount"
-            p.Parent = o
-            p.BackgroundColor3 = Color3.fromRGB(50, 10, 20)
-            p.BackgroundTransparency = 0
-            p.BorderSizePixel = 0
-            p.Position = UDim2.new(0, e, 0, 0)
-            p.Size = UDim2.new(0, 18, 0, 18)
-            v.Name = "Title_2"
-            v.Parent = o
-            v.AnchorPoint = Vector2.new(0, 0)
-            v.BackgroundColor3 = Color3.fromRGB(240, 10, 10)
-            v.AutoButtonColor = false
-            v.BackgroundTransparency = 1.000
-            v.Position = UDim2.new(0, e, 0, 0)
-            v.Size = UDim2.new(0, 18, 0, 18)
-            v.Font = Enum.Font.GothamBold
-            v.Text = tostring(e and math.floor((e / d) * (d - c) + c) or 0)
-            v.TextColor3 = Color3.fromRGB(255, 255, 255)
-            v.TextSize = 8.000
-            v.TextXAlignment = Enum.TextXAlignment.Center
-            w.Parent = v
-            w.CornerRadius = UDim.new(0, 100000)
-            q.CornerRadius = UDim.new(0, 100000)
-            q.Parent = p
-            s.Name = "BoxFrame"
-            s.Parent = j
-            s.BackgroundColor3 = Color3.fromRGB(240, 10, 10)
-            s.BackgroundTransparency = 1.000
-            s.Size = UDim2.new(0, 50, 0, 15)
-            s.Position = UDim2.new(0, 319, 0, 8)
-            t.Name = "SliderBox"
-            t.Parent = s
-            t.BackgroundColor3 = Color3.fromRGB(39, 40, 41)
-            t.BackgroundTransparency = .1
-            t.BorderSizePixel = 0
-            t.Position = UDim2.new(0, 0, 0, 1.65)
-            t.Size = UDim2.new(0, 50, 0, 15)
-            t.ClearTextOnFocus = false
-            t.Font = Enum.Font.Code
-            t.Text = tostring(e and math.floor((e / d) * (d - c) + c) or 0)
-            t.TextColor3 = Color3.fromRGB(200, 200, 200)
-            t.TextSize = 10.000
-            t.TextTransparency = 0
-            t.TextXAlignment = Enum.TextXAlignment.Center
-            t.TextEditable = true
-            x.Parent = s
-            x.CornerRadius = UDim.new(0, 2)
-            local b
-            local e
-            local f
-            local i = o
-            local function i(a)
-                local a = UDim2.new(math.clamp((a.Position.X - o.AbsolutePosition.X) / o.AbsoluteSize.X, 0, 1), 0, 0, 0)
-                p:TweenPosition(a, Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0.08, true)
-                v:TweenPosition(a, Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0.12, true)
-                local b = math.floor(((a.X.Scale * d) / d) * (d - c) + c)
-                t.Text = tostring(b)
-                v.Text = tostring(b)
-                pcall(g, b, a)
-            end
-            o.InputBegan:Connect(
-                function(a)
-                    if a.UserInputType == Enum.UserInputType.MouseButton1 or a.UserInputType == Enum.UserInputType.Touch then
-                        b = true
-                        f = a
-                        e = a.Position.X
-                        slidein = o.AbsolutePosition.X
-                        game.TweenService:Create(
-                            p,
-                            TweenInfo.new(0.08, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
-                            {BackgroundTransparency = 0, Size = UDim2.new(0, 14, 0, 14)}
-                        ):Play()
-                        game.TweenService:Create(
-                            v,
-                            TweenInfo.new(0.12, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
-                            {
-                                AnchorPoint = Vector2.new(0.22, 0.8),
-                                TextSize = 13.000,
-                                BackgroundTransparency = 0,
-                                Size = UDim2.new(0, 25, 0, 25)
-                            }
-                        ):Play()
-                        game.TweenService:Create(
-                            t,
-                            TweenInfo.new(0.08, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
-                            {TextTransparency = 0}
-                        ):Play()
-                        game.TweenService:Create(
-                            n,
-                            TweenInfo.new(0.08, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
-                            {BackgroundTransparency = 0.5}
-                        ):Play()
-                        game.TweenService:Create(
-                            u,
-                            TweenInfo.new(0.08, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
-                            {Transparency = 0}
-                        ):Play()
-                    end
-                    a.Changed:Connect(
-                        function(a)
-                            if a.UserInputType == Enum.UserInputState.End then
-                                b = false
-                            end
-                        end
-                    )
-                end
-            )
-            o.InputEnded:Connect(
-                function(a)
-                    if
-                        a.UserInputType == Enum.UserInputType.MouseMovement or
-                            a.UserInputType == Enum.UserInputType.Touch
-                     then
-                        b = false
-                        f = a
-                        game.TweenService:Create(
-                            p,
-                            TweenInfo.new(0.08, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
-                            {BackgroundTransparency = 0.3, Size = UDim2.new(0, 18, 0, 18)}
-                        ):Play()
-                        game.TweenService:Create(
-                            v,
-                            TweenInfo.new(0.12, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
-                            {
-                                AnchorPoint = Vector2.new(0, 0),
-                                TextSize = 8.000,
-                                BackgroundTransparency = 1.000,
-                                Size = UDim2.new(0, 18, 0, 18)
-                            }
-                        ):Play()
-                        game.TweenService:Create(
-                            t,
-                            TweenInfo.new(0.08, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
-                            {TextTransparency = 0.5}
-                        ):Play()
-                        game.TweenService:Create(
-                            n,
-                            TweenInfo.new(0.08, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
-                            {BackgroundTransparency = 0.7}
-                        ):Play()
-                        game.TweenService:Create(
-                            u,
-                            TweenInfo.new(0.08, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut),
-                            {Transparency = 0.5}
-                        ):Play()
-                    end
-                end
-            )
-            a.InputChanged:Connect(
-                function(a)
-                    if a == f and b then
-                        i(a)
-                    end
-                end
-            )
-            function set(a)
-                if a == "Text" then
-                    if tonumber(t.Text) then
-                        if tonumber(t.Text) <= d then
-                            Value = t.Text
-                            v.Text = t.Text
-                            p:TweenPosition(
-                                UDim2.new(((tonumber(t.Text) or c) - c) / (d - c), 0, 0, 0),
-                                "InOut",
-                                "Linear",
-                                0.08,
-                                true
-                            )
-                            v:TweenPosition(
-                                UDim2.new(((tonumber(t.Text) or c) - c) / (d - c), 0, 0, 0),
-                                "InOut",
-                                "Linear",
-                                0.12,
-                                true
-                            )
-                            pcall(
-                                function()
-                                    g(Value)
-                                end
-                            )
-                        end
-                        if tonumber(t.Text) > d then
-                            t.Text = d
-                            v.Text = d
-                            Value = d
-                            p:TweenPosition(UDim2.new(((d or c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.08, true)
-                            v:TweenPosition(UDim2.new(((d or c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.12, true)
-                            pcall(
-                                function()
-                                    g(Value)
-                                end
-                            )
-                        end
-                        if tonumber(t.Text) >= c then
-                            Value = t.Text
-                            v.Text = t.Text
-                            p:TweenPosition(
-                                UDim2.new(((tonumber(t.Text) or c) - c) / (d - c), 0, 0, 0),
-                                "InOut",
-                                "Linear",
-                                0.08,
-                                true
-                            )
-                            v:TweenPosition(
-                                UDim2.new(((tonumber(t.Text) or c) - c) / (d - c), 0, 0, 0),
-                                "InOut",
-                                "Linear",
-                                0.12,
-                                true
-                            )
-                            pcall(
-                                function()
-                                    g(Value)
-                                end
-                            )
-                        end
-                        if tonumber(t.Text) < c then
-                            Value = c
-                            v = c
-                            p.Position = UDim2.new(((c or c) - c) / (d - c), 0, 0, 0)
-                            v.Position = UDim2.new(((c or c) - c) / (d - c), 0, 0, 0)
-                            pcall(
-                                function()
-                                    g(Value)
-                                end
-                            )
-                        end
-                    else
-                        t.Text = "" or Value
-                        v.Text = Value
-                    end
-                end
-            end
-            t.Focused:Connect(
-                function()
-                    t.Changed:Connect(set)
-                end
-            )
-            t.FocusLost:Connect(
-                function(a)
-                    if not a then
-                        if t.Text == "" then
-                            t.Text = c
-                            v.Text = c
-                            Value = c
-                            p:TweenPosition(UDim2.new(((c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.08, true)
-                            v:TweenPosition(UDim2.new(((c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.12, true)
-                            pcall(
-                                function()
-                                    g(Value)
-                                end
-                            )
-                        end
-                        if tonumber(t.Text) > tonumber(d) then
-                            Value = d
-                            t.Text = d
-                            v.Text = d
-                            p:TweenPosition(UDim2.new(((d or c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.08, true)
-                            v:TweenPosition(UDim2.new(((d or c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.12, true)
-                            pcall(
-                                function()
-                                    g(Value)
-                                end
-                            )
-                        else
-                            Value = tonumber(t.Text)
-                        end
-                        if tonumber(t.Text) < c then
-                            t.Text = c
-                            v.Text = c
-                            Value = c
-                            p:TweenPosition(UDim2.new(((c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.08, true)
-                            v:TweenPosition(UDim2.new(((c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.12, true)
-                            pcall(
-                                function()
-                                    g(Value)
-                                end
-                            )
-                        else
-                            Value = tonumber(t.Text)
+local FarmCoinTask = SetFeatureFunction("FarmCoin",function() 
+    LPH_JIT(function() 
+        local FarmCoinList = {
+            Length = 0,
+            Coins = {}
+        }
+        local PetJoinId = {}
+        local PetPerCoin = nil
+        while wait() do
+            if Settings.FarmMap and MapData[Settings.FarmMap] and not StoppedTp
+            then 
+                --print(0)
+                local BreakableFolder = Breakables[MapData[Settings.FarmMap].Name]
+                --local PetPerCoin = BreakableFolder.Lenght
+                if BreakableFolder then 
+    
+                    local NumberOfPet = #PlayerPetIndex
+                    local PetPerCoin = NumberOfPet
+                    if not PetPerCoin then PetPerCoin = NumberOfPet end
+                    if Settings.UltraBoost then 
+                        if not getgenv().BoostedFps then 
+                            BoostFps()
+                            getgenv().BoostedFps = true
                         end
                     end
-                    if tonumber(t.Text) > d then
-                        t.Text = d
-                        v.Text = d
-                        Value = d
-                        p:TweenPosition(UDim2.new(((d or c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.08, true)
-                        v:TweenPosition(UDim2.new(((d or c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.12, true)
-                        pcall(
-                            function()
-                                g(Value)
-                            end
-                        )
-                    else
-                        Value = tonumber(t.Text)
-                    end
-                    if tonumber(t.Text) < c then
-                        t.Text = c
-                        v.Text = c
-                        Value = c
-                        p.Position = UDim2.new(((c) - c) / (d - c), 0, 0, 0)
-                        v.Position = UDim2.new(((c) - c) / (d - c), 0, 0, 0)
-                        pcall(
-                            function()
-                                g(Value)
-                            end
-                        )
-                    else
-                        Value = tonumber(t.Text)
-                    end
-                    if t.Text == "" then
-                        t.Text = c
-                        v.Text = c
-                        Value = c
-                        p:TweenPosition(UDim2.new(((c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.08, true)
-                        v:TweenPosition(UDim2.new(((c) - c) / (d - c), 0, 0, 0), "InOut", "Linear", 0.12, true)
-                        pcall(
-                            function()
-                                g(Value)
-                            end
-                        )
-                    end
-                end
-            )
-            return h
-        end
-        function c:Slider2(a, b, c, d, e)
-            local g = Instance.new("Frame")
-            local h = Instance.new("UICorner")
-            local i = Instance.new("Frame")
-            local j = Instance.new("UICorner")
-            local k = Instance.new("ImageLabel")
-            local l = Instance.new("UIStroke")
-            local l = Instance.new("TextLabel")
-            local m = Instance.new("Frame")
-            local n = Instance.new("TextButton")
-            local o = Instance.new("Frame")
-            local p = Instance.new("Frame")
-            local q = Instance.new("UICorner")
-            local r = Instance.new("UICorner")
-            local s = Instance.new("Frame")
-            local t = Instance.new("UICorner")
-            local u = Instance.new("Frame")
-            local v = Instance.new("UICorner")
-            local w = Instance.new("TextBox")
-            local x = Instance.new("UICorner")
-            local y = Instance.new("UIStroke")
-            g.Name = "Slider"
-            g.Parent = f
-            g.BackgroundColor3 = Color3.fromRGB(240, 10, 10)
-            g.BackgroundTransparency = 1
-            g.Size = UDim2.new(0, 379, 0, 60)
-            h.CornerRadius = UDim.new(0, 5)
-            h.Name = "slidercorner"
-            h.Parent = g
-            i.Name = "sliderr"
-            i.Parent = g
-            i.BackgroundColor3 = Color3.fromRGB(255, 30, 50)
-            i.BackgroundTransparency = .8
-            i.Position = UDim2.new(0, 1, 0, 1)
-            i.Size = UDim2.new(0, 379, 0, 60)
-            j.CornerRadius = UDim.new(0, 5)
-            j.Name = "sliderrcorner"
-            j.Parent = i
-            k.Name = "ImageLabel"
-            k.Parent = i
-            k.BackgroundColor3 = Color3.fromRGB(240, 10, 10)
-            k.BackgroundTransparency = 1.000
-            k.BorderSizePixel = 0
-            k.Position = UDim2.new(0, 7.5, 0, 7.5)
-            k.Size = UDim2.new(0, 30, 0, 30)
-            k.Image = "rbxassetid://16275269532"
-            l.Parent = i
-            l.BackgroundColor3 = Color3.fromRGB(150, 150, 150)
-            l.BackgroundTransparency = 1.000
-            l.Position = UDim2.new(0, 45, 0, 5)
-            l.Size = UDim2.new(0, 280, 0, 30)
-            l.Font = Enum.Font.GothamSemibold
-            l.Text = "|  " .. a
-            l.TextColor3 = Color3.fromRGB(255, 255, 255)
-            l.TextSize = 15.000
-            l.TextXAlignment = Enum.TextXAlignment.Left
-            m.Name = "HAHA"
-            m.Parent = i
-            m.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            m.BackgroundTransparency = 1.000
-            m.Size = UDim2.new(0, 359, 0, 29)
-            n.Name = "AHEHE"
-            n.Parent = i
-            n.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            n.BackgroundTransparency = 1.000
-            n.Position = UDim2.new(0, 10, 0, 42)
-            n.Size = UDim2.new(0, 359, 0, 5)
-            n.Font = Enum.Font.SourceSans
-            n.Text = ""
-            n.TextColor3 = Color3.fromRGB(0, 0, 0)
-            n.TextSize = 14.000
-            o.Name = "bar"
-            o.Parent = n
-            o.BackgroundColor3 = Color3.fromRGB(255, 10, 10)
-            o.Size = UDim2.new(0, 359, 0, 5)
-            o.BackgroundTransparency = .8
-            p.Name = "bar1"
-            p.Parent = o
-            p.BackgroundColor3 = Color3.fromRGB(90, 10, 20)
-            p.BackgroundTransparency = 0
-            p.Size = UDim2.new(d / c, 0, 0, 5)
-            q.CornerRadius = UDim.new(0, 5)
-            q.Name = "bar1corner"
-            q.Parent = p
-            r.CornerRadius = UDim.new(0, 5)
-            r.Name = "barcorner"
-            r.Parent = o
-            s.Name = "circlebar"
-            s.Parent = p
-            s.BackgroundColor3 = Color3.fromRGB(90, 10, 20)
-            s.Position = UDim2.new(1, -2, 0, -3)
-            s.Size = UDim2.new(0, 10, 0, 10)
-            t.CornerRadius = UDim.new(0, 100)
-            t.Parent = s
-            u.Name = "slidervalue"
-            u.Parent = i
-            u.BackgroundColor3 = Color3.fromRGB(90, 10, 20)
-            u.BackgroundTransparency = .1
-            u.Position = UDim2.new(0, 319, 0, 10)
-            u.Size = UDim2.new(0, 50, 0, 15)
-            v.CornerRadius = UDim.new(0, 2)
-            v.Name = "valuecorner"
-            v.Parent = u
-            w.Parent = u
-            w.BackgroundColor3 = Color3.fromRGB(90, 10, 20)
-            w.BackgroundTransparency = .1
-            w.Position = UDim2.new(0, 0, 0, 0)
-            w.Size = UDim2.new(0, 50, 0, 16)
-            w.Font = Enum.Font.Code
-            w.TextColor3 = Color3.fromRGB(255, 255, 255)
-            w.TextSize = 9.000
-            w.Text = d
-            w.TextTransparency = .1
-            w.ClearTextOnFocus = false
-            w.TextXAlignment = Enum.TextXAlignment.Center
-            x.CornerRadius = UDim.new(0, 3)
-            x.Parent = w
-            local a = game.Players.LocalPlayer:GetMouse()
-            local f = game:GetService("UserInputService")
-            if Value == nil then
-                Value = d
-                pcall(
-                    function()
-                        e(Value)
-                    end
-                )
-            end
-            n.MouseButton1Down:Connect(
-                function()
-                    Value = math.floor((((tonumber(c) - tonumber(b)) / 349) * p.AbsoluteSize.X) + tonumber(b)) or 0
-                    pcall(
-                        function()
-                            e(Value)
-                        end
-                    )
-                    p.Size = UDim2.new(0, math.clamp(a.X - p.AbsolutePosition.X, 0, 349), 0, 5)
-                    s.Position = UDim2.new(0, math.clamp(a.X - p.AbsolutePosition.X - 2, 0, 349), 0, -3)
-                    moveconnection =
-                        a.Move:Connect(
-                        function()
-                            w.Text = Value
-                            Value = math.floor((((tonumber(c) - tonumber(b)) / 349) * p.AbsoluteSize.X) + tonumber(b))
-                            pcall(
-                                function()
-                                    e(Value)
-                                end
-                            )
-                            p.Size = UDim2.new(0, math.clamp(a.X - p.AbsolutePosition.X, 0, 349), 0, 5)
-                            s.Position = UDim2.new(0, math.clamp(a.X - p.AbsolutePosition.X - 2, 0, 349), 0, -3)
-                        end
-                    )
-                    releaseconnection =
-                        f.InputEnded:Connect(
-                        function(d)
-                            if d.UserInputType == Enum.UserInputType.MouseButton1 then
-                                Value =
-                                    math.floor((((tonumber(c) - tonumber(b)) / 349) * p.AbsoluteSize.X) + tonumber(b))
-                                pcall(
-                                    function()
-                                        e(Value)
+                    plr.Character.HumanoidRootPart.CFrame = MapData[Settings.FarmMap].CFrame
+                    getgenv().noclip = true
+                    if Settings.FarmingMethod ~= "Engine" then 
+                        if Settings.FarmingMethod == "Extreme" or FarmCoinList.Length < PetPerCoin then 
+                            --print(2)
+                            local Lowest
+                            local AllCoinLenght
+                            for k,v in BreakableFolder do 
+                                --print(k,v)
+                                if not FarmCoinList.Coins[k] then 
+                                    local FarmingMode = Settings.FarmingMode
+                                    if FarmingMode ~= "All" then 
+                                        -- local MeshPart = v:FindFirstChildOfClass("MeshPart")
+                                        -- if MeshPart then 
+                                        --     if not Lowest then 
+                                        --         Lowest = v
+                                        --     end
+                                        --     if FarmingMode == "Lowest Health" then 
+                                        --         local Size = GetSizeOfCoin(MeshPart)
+                                        --         if Size < GetSizeOfCoin(Lowest:FindFirstChildOfClass("MeshPart")) then 
+                                        --             Lowest = v
+                                        --         end
+                                        --     elseif FarmingMode == "Highest Health" then
+                                        --         local Size = GetSizeOfCoin(MeshPart)
+                                        --         if Size > GetSizeOfCoin(Lowest:FindFirstChildOfClass("MeshPart")) then 
+                                        --             Lowest = v
+                                        --         end
+                                        --     else
+                                        --         Lowest = v
+                                        --     end
+                                        -- else
+                                            
+                                        -- end
+                                    else
+                                        if FarmCoinList.Length < PetPerCoin then 
+                                            FarmCoinList.Coins[k] = v
+                                            FarmCoinList.Length = FarmCoinList.Length + 1
+                                            --plr.Character.HumanoidRootPart.CFrame = FarmCoinList.Coins[k]
+                                        else 
+                                            break
+                                        end
                                     end
-                                )
-                                p.Size = UDim2.new(0, math.clamp(a.X - p.AbsolutePosition.X, 0, 349), 0, 5)
-                                s.Position = UDim2.new(0, math.clamp(a.X - p.AbsolutePosition.X - 2, 0, 349), 0, -3)
-                                moveconnection:Disconnect()
-                                releaseconnection:Disconnect()
+                                end
+                                if Settings.FarmingMethod == "Extreme" then 
+                                    game:GetService("ReplicatedStorage").Network.Breakables_JoinPet:FireServer(v.Name,PlayerPetIndex[math.random(1,#PlayerPetIndex)])
+                                    game:GetService("ReplicatedStorage").Network.Breakables_PlayerDealDamage:FireServer(v.Name)
+                                end
+                            end 
+                            if Lowest and Settings.FarmingMethod ~= "Extreme" and Settings.FarmingMethod ~= "All" then 
+                                FarmCoinList.Coins[Lowest.Name] = Lowest
+                                FarmCoinList.Length = FarmCoinList.Length + 1
                             end
                         end
-                    )
-                end
-            )
-            releaseconnection =
-                f.InputEnded:Connect(
-                function(a)
-                    if a.UserInputType == Enum.UserInputType.MouseButton1 then
-                        Value = math.floor((((tonumber(c) - tonumber(b)) / 349) * p.AbsoluteSize.X) + tonumber(b))
-                        w.Text = Value
+                        if Settings.FarmingMethod ~= "Extreme" then 
+                            local i = 1
+                            local TargetBulk = {}
+                            while i < #PlayerPetIndex do 
+                                local ReachedPlusI = false
+                                for k,v in FarmCoinList.Coins do 
+                                    if not BreakableFolder[k] then 
+                                        FarmCoinList.Coins[k] = nil
+                                        FarmCoinList.Length = FarmCoinList.Length - 1
+                                    else
+                                        if i < #PlayerPetIndex then 
+                                            if PetJoinId[PlayerPetIndex[i]] and FarmCoinList.Coins[PetJoinId[PlayerPetIndex[i]]] then 
+                                                if Settings.AutoTap then 
+                                                    game:GetService("ReplicatedStorage").Network.Breakables_PlayerDealDamage:FireServer(k)
+                                                end
+                                            else
+                                                game:GetService("ReplicatedStorage").Network.Breakables_JoinPet:FireServer(k,PlayerPetIndex[i])
+                                                PetJoinId[PlayerPetIndex[i]] = k
+                                                TargetBulk[PlayerPetIndex[i]] = {
+                                                    ["targetValue"] = k,
+                                                    ["targetType"] = "Breakable"
+                                                }
+                                                i = i + 1
+                                                ReachedPlusI = true
+                                            end
+                                        end
+                                    end 
+                                end
+                                if not ReachedPlusI then break end
+                            end
+                        end
                     end
+                else
+                    plr.Character.HumanoidRootPart.CFrame = MapData[Settings.FarmMap].CFrame
                 end
-            )
-            w.FocusLost:Connect(
-                function()
-                    if tonumber(w.Text) > c then
-                        w.Text = c
-                    end
-                    p.Size = UDim2.new((w.Text or 0) / c, 0, 0, 5)
-                    s.Position = UDim2.new(1, -2, 0, -3)
-                    w.Text = tostring(w.Text and math.floor((w.Text / c) * (c - b) + b))
-                    pcall(e, w.Text)
-                end
-            )
-        end
-        function c:Textbox(a, b, c)
-            local d = Instance.new("Frame")
-            local e = Instance.new("UICorner")
-            local g = Instance.new("Frame")
-            local h = Instance.new("UICorner")
-            local i = Instance.new("TextLabel")
-            local j = Instance.new("TextButton")
-            local k = Instance.new("TextBox")
-            local l = Instance.new("UICorner")
-            d.Name = "Textbox"
-            d.Parent = f
-            d.BackgroundColor3 = Color3.new(32, 33, 36)
-            d.BackgroundTransparency = 0
-            d.Size = UDim2.new(0, 379, 0, 31)
-            e.CornerRadius = UDim.new(0, 5)
-            e.Name = "TextboxCorner"
-            e.Parent = d
-            g.Name = "Textboxx"
-            g.Parent = d
-            g.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-            g.Position = UDim2.new(0, 1, 0, 1)
-            g.Size = UDim2.new(0, 385, 0, 29)
-            h.CornerRadius = UDim.new(0, 5)
-            h.Name = "TextboxxCorner"
-            h.Parent = g
-            i.Name = "TextboxLabel"
-            i.Parent = d
-            i.BackgroundColor3 = Color3.fromRGB(240, 10, 10)
-            i.BackgroundTransparency = 1.000
-            i.Position = UDim2.new(0, 15, 0, 0)
-            i.Text = a
-            i.Size = UDim2.new(0, 145, 0, 31)
-            i.Font = Enum.Font.GothamSemibold
-            i.TextColor3 = Color3.fromRGB(255, 255, 255)
-            i.TextSize = 16.000
-            i.TextTransparency = 0
-            i.TextXAlignment = Enum.TextXAlignment.Left
-            j.Name = "txtbtn"
-            j.Parent = d
-            j.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            j.BackgroundTransparency = 1.000
-            j.Position = UDim2.new(0, 1, 0, 1)
-            j.Size = UDim2.new(0, 379, 0, 29)
-            j.Font = Enum.Font.SourceSans
-            j.Text = ""
-            j.TextColor3 = Color3.fromRGB(0, 0, 0)
-            j.TextSize = 14.000
-            k.Name = "RealTextbox"
-            k.Parent = d
-            k.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-            k.BackgroundTransparency = 0
-            k.Position = UDim2.new(0, 275, 0, 4)
-            k.Size = UDim2.new(0, 100, 0, 24)
-            k.Font = Enum.Font.GothamSemibold
-            k.Text = ""
-            k.TextColor3 = Color3.fromRGB(225, 225, 225)
-            k.TextSize = 11.000
-            k.TextTransparency = 0
-            k.FocusLost:Connect(
-                function()
-                    c(k.Text)
-                    if b then
-                        k.Text = ""
-                    end
-                end
-            )
-            l.CornerRadius = UDim.new(0, 5)
-            l.Parent = k
-        end
-        function c:Label(a)
-            local b = Instance.new("TextLabel")
-            local c = Instance.new("UIPadding")
-            local d = {}
-            b.Name = "Label"
-            b.Parent = f
-            b.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            b.BackgroundTransparency = 1.000
-            b.Size = UDim2.new(0, 410, 0, 20)
-            b.Font = Enum.Font.GothamSemibold
-            b.TextColor3 = Color3.fromRGB(225, 225, 225)
-            b.TextSize = 16.000
-            b.Text = a
-            b.TextXAlignment = Enum.TextXAlignment.Left
-            c.PaddingLeft = UDim.new(0, 15)
-            c.Parent = b
-            c.Name = "PaddingLabel"
-            function d:Set(a)
-                b.Text = a
             end
-            return d
         end
-        function c:Label1(a)
-            local b = Instance.new("TextLabel")
-            local c = Instance.new("UIPadding")
-            local d = {}
-            b.Name = "Label1"
-            b.Parent = f
-            b.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            b.BackgroundTransparency = 1.000
-            b.Size = UDim2.new(0, 410, 0, 20)
-            b.Font = Enum.Font.GothamSemibold
-            b.TextColor3 = Color3.fromRGB(255, 255, 255)
-            b.TextSize = 15.000
-            b.Text = a
-            b.TextXAlignment = Enum.TextXAlignment.Left
-            c.PaddingLeft = UDim.new(0, 15)
-            c.Parent = b
-            c.Name = "PaddingLabel1"
-            function d:Refresh(a)
-                b.Text = a
-            end
-            return d
-        end
-        function c:Textbox(a, b, c)
-            local d = Instance.new("Frame")
-            local e = Instance.new("UICorner")
-            local g = Instance.new("Frame")
-            local h = Instance.new("UICorner")
-            local i = Instance.new("TextLabel")
-            local j = Instance.new("TextButton")
-            local k = Instance.new("TextBox")
-            local l = Instance.new("UICorner")
-            d.Name = "Textbox"
-            d.Parent = f
-            d.BackgroundColor3 = Color3.new(32, 33, 36)
-            d.BackgroundTransparency = 0
-            d.Size = UDim2.new(0, 379, 0, 31)
-            e.CornerRadius = UDim.new(0, 5)
-            e.Name = "TextboxCorner"
-            e.Parent = d
-            g.Name = "Textboxx"
-            g.Parent = d
-            g.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-            g.Position = UDim2.new(0, 1, 0, 1)
-            g.Size = UDim2.new(0, 385, 0, 29)
-            h.CornerRadius = UDim.new(0, 3)
-            h.Name = "TextboxxCorner"
-            h.Parent = g
-            i.Name = "TextboxLabel"
-            i.Parent = d
-            i.BackgroundColor3 = Color3.fromRGB(240, 10, 10)
-            i.BackgroundTransparency = 1.000
-            i.Position = UDim2.new(0, 15, 0, 0)
-            i.Text = a
-            i.Size = UDim2.new(0, 145, 0, 31)
-            i.Font = Enum.Font.GothamSemibold
-            i.TextColor3 = Color3.fromRGB(225, 225, 225)
-            i.TextSize = 16.000
-            i.TextTransparency = 0
-            i.TextXAlignment = Enum.TextXAlignment.Left
-            j.Name = "txtbtn"
-            j.Parent = d
-            j.BackgroundColor3 = Color3.fromRGB(240, 10, 10)
-            j.BackgroundTransparency = 1.000
-            j.Position = UDim2.new(0, 1, 0, 1)
-            j.Size = UDim2.new(0, 379, 0, 29)
-            j.Font = Enum.Font.SourceSans
-            j.Text = ""
-            j.TextColor3 = Color3.fromRGB(0, 0, 0)
-            j.TextSize = 14.000
-            k.Name = "RealTextbox"
-            k.Parent = d
-            k.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-            k.BackgroundTransparency = 0
-            k.Position = UDim2.new(0, 275, 0, 4)
-            k.Size = UDim2.new(0, 100, 0, 24)
-            k.Font = Enum.Font.GothamSemibold
-            k.Text = ""
-            k.TextColor3 = Color3.fromRGB(225, 225, 225)
-            k.TextSize = 11.000
-            k.TextTransparency = 0
-            k.FocusLost:Connect(
-                function()
-                    c(k.Text)
-                    if b then
-                        k.Text = ""
-                    end
-                end
-            )
-            l.CornerRadius = UDim.new(0, 3)
-            l.Parent = k
-        end
-        function c:Label(a)
-            local b = Instance.new("TextLabel")
-            local c = Instance.new("UIPadding")
-            local d = {}
-            b.Name = "Label"
-            b.Parent = f
-            b.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            b.BackgroundTransparency = 1.000
-            b.Size = UDim2.new(0, 410, 0, 30)
-            b.Font = Enum.Font.GothamSemibold
-            b.TextColor3 = Color3.fromRGB(225, 225, 225)
-            b.TextSize = 14.000
-            b.Text = a
-            b.TextXAlignment = Enum.TextXAlignment.Left
-            c.PaddingLeft = UDim.new(0, 15)
-            c.Parent = b
-            c.Name = "PaddingLabel"
-            function d:Set(a)
-                b.Text = a
-            end
-            return d
-        end
-        function c:Label1(a)
-            local b = Instance.new("TextLabel")
-            local c = Instance.new("UIPadding")
-            local d = {}
-            b.Name = "Label1"
-            b.Parent = f
-            b.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            b.BackgroundTransparency = 1.000
-            b.Size = UDim2.new(0, 410, 0, 20)
-            b.Font = Enum.Font.GothamSemibold
-            b.TextColor3 = Color3.fromRGB(255, 255, 255)
-            b.TextSize = 15.000
-            b.Text = a
-            b.RichText = true
-            b.TextXAlignment = Enum.TextXAlignment.Left
-            c.PaddingLeft = UDim.new(0, 15)
-            c.Parent = b
-            c.Name = "PaddingLabel1"
-            function d:Refresh(a)
-                b.Text = a
-            end
-            return d
-        end
-        function c:Dis(a, b)
-            local c = Instance.new("TextLabel")
-            local d = Instance.new("UIPadding")
-            local e = {}
-            c.Name = "Label1"
-            c.Parent = f
-            c.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            c.BackgroundTransparency = 1.000
-            c.Size = UDim2.new(0, 410, 0, 20)
-            c.Font = Enum.Font.GothamSemibold
-            c.TextColor3 = Color3.fromRGB(255, 255, 255)
-            c.TextSize = 15.000
-            c.Text = a
-            c.TextXAlignment = Enum.TextXAlignment.Left
-            Labeld.Name = "Labeld"
-            Labeld.Parent = f
-            Labeld.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            Labeld.BackgroundTransparency = 1.000
-            Labeld.Size = UDim2.new(0, 410, 0, 20)
-            Labeld.Font = Enum.Font.GothamSemibold
-            Labeld.TextColor3 = Color3.fromRGB(240, 10, 10)
-            Labeld.TextSize = 15.000
-            Labeld.Text = b or ""
-            Labeld.TextXAlignment = Enum.TextXAlignment.Left
-            d.PaddingLeft = UDim.new(0, 15)
-            d.Parent = c
-            d.Name = "PaddingLabel1"
-            function e:Refresh(a)
-                c.Text = a
-            end
-            return e
-        end
-        function c:Seperator(a)
-            local b = Instance.new("Frame")
-            local c = Instance.new("Frame")
-            local d = Instance.new("TextLabel")
-            local e = Instance.new("Frame")
-            local g = Instance.new("UIGradient")
-            local h = Instance.new("UIGradient")
-            b.Name = "Seperator"
-            b.Parent = f
-            b.BackgroundColor3 = _G.Primary
-            b.BackgroundTransparency = 1
-            b.Size = UDim2.new(0, 379, 0, 30)
-            c.Name = "Sep1"
-            c.Parent = b
-            c.BackgroundColor3 = _G.Primary
-            c.BackgroundTransparency = .1
-            c.BorderSizePixel = 0
-            c.Position = UDim2.new(0, 10, 0, 13)
-            c.Size = UDim2.new(0, 60, 0, 2)
-            d.Name = "Sep2"
-            d.Parent = b
-            d.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            d.BackgroundTransparency = 1
-            d.Position = UDim2.new(0, 0, 0, 0)
-            d.Size = UDim2.new(0, 379, 0, 30)
-            d.Font = Enum.Font.GothamSemibold
-            d.Text = "" .. a .. ""
-            d.TextColor3 = Color3.fromRGB(255, 255, 255)
-            d.TextSize = 14.000
-            e.Name = "Sep3"
-            e.Parent = b
-            e.BackgroundColor3 = _G.Primary
-            e.BackgroundTransparency = .1
-            e.BorderSizePixel = 0
-            e.Position = UDim2.new(0, 309, 0, 13)
-            e.Size = UDim2.new(0, 60, 0, 2)
-            g.Color =
-                ColorSequence.new {
-                ColorSequenceKeypoint.new(0.00, _G.Dark),
-                ColorSequenceKeypoint.new(0.50, _G.Primary),
-                ColorSequenceKeypoint.new(1.00, _G.Dark)
-            }
-            g.Parent = c
-            h.Color =
-                ColorSequence.new {
-                ColorSequenceKeypoint.new(0.00, _G.Dark),
-                ColorSequenceKeypoint.new(0.50, _G.Primary),
-                ColorSequenceKeypoint.new(1.00, _G.Dark)
-            }
-            h.Parent = e
-        end
-        function c:Line()
-            local a = Instance.new("Frame")
-            local b = Instance.new("Frame")
-            local c = Instance.new("UIGradient")
-            a.Name = "Linee"
-            a.Parent = f
-            a.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            a.BackgroundTransparency = 1.000
-            a.Position = UDim2.new(0, 0, 0.119999997, 0)
-            a.Size = UDim2.new(0, 310, 0, 20)
-            b.Name = "Line"
-            b.Parent = a
-            b.BackgroundColor3 = Color3.new(125, 125, 125)
-            b.BorderSizePixel = 0
-            b.Position = UDim2.new(0, 0, 0, 10)
-            b.Size = UDim2.new(0, 379, 0, 1)
-            c.Color =
-                ColorSequence.new {
-                ColorSequenceKeypoint.new(0.00, _G.Dark),
-                ColorSequenceKeypoint.new(0.40, _G.Primary),
-                ColorSequenceKeypoint.new(0.50, _G.Primary),
-                ColorSequenceKeypoint.new(0.60, _G.Primary),
-                ColorSequenceKeypoint.new(1.00, _G.Dark)
-            }
-            c.Parent = b
-        end
-        return c
-    end
-    return c
+    end)()
+end)
+FarmCoinTask.ForceStoped = function() 
+    getgenv().noclip = false
 end
-return d
+
+
+
+-- for k,v in getgc(true) do 
+--     if type(v) == "table" then 
+--         if pcall(function() return v.RegularMerchant.Seeds end) and v.RegularMerchant and type(v.RegularMerchant) == "table" and v.RegularMerchant.Seeds then 
+--             getgenv().Table = v
+--             print("Done")
+--             break
+--         end
+--     end
+-- end
+
+--setclipboard(tostring(game.Players.LocalPlayer.Character.HumanoidRootPart.Position))
+
+
+
+local Main = Library.CreateMain({Title = 'Pet Simulator 99', Desc = ''})
+print("Created Main?")
+local Page1 = Main.CreatePage({Page_Name = 'Main', Page_Title = 'Main Tab'})
+local Section11 = Page1.CreateSection('Main')
+
+
+Section11.CreateToggle({Title = 'Auto Fishing', Default = Settings.CauCa}, function(v)
+    SetFeatureState("CauCa",v)
+end)
+
+
+
+
+Section11.CreateToggle({Title = 'Auto Claim Free Reward', Default = Settings.ClaimFree}, function(v)
+   SetFeatureState("AutoClaimFreeReward",v)
+end)
+
+local Section11 = Page1.CreateSection('Auto Merchant')
+
+Section11.CreateToggle({Title = 'Auto Merchant', Default = Settings.AutoMerchant}, function(v)
+    SetFeatureState("AutoMerchant",v)
+end)
+
+--setclipboard(tostring(game.Players.LocalPlayer.Character.HumanoidRootPart.Position))
+local MerchantInfo = {
+    RegularMerchant = {
+        Position = CFrame.new(372.11248779296875, 16.306806564331055, 551.4596557617188)
+    },
+    AdvancedMerchant = {
+        Position = CFrame.new(808.6577758789062, 16.58210563659668, 1548.416748046875)
+    },
+    GardenMerchant = {
+        Position = CFrame.new(258.5284729003906, 16.566850662231445, 2067.40087890625)
+    }
+}
+local ListMerchant = {}
+
+for k,v in MerchantInfo do 
+    table.insert(ListMerchant,k)
+end
+
+ListMerchant = SetupTF(ListMerchant,"MerchantTF")
+
+Section11.CreateDropdown({Title = 'Select Merchant', List = ListMerchant, Selected = true}, function(i, v)
+    if i and v then 
+        ListMerchant[i]=v
+    end
+end)
+
+local MerchantsTable = getgenv().MerchantsTable
+
+
+
+game:GetService("ReplicatedStorage"):WaitForChild("Network").Merchant_Updated.OnClientEvent:Connect(function(...)
+    MerchantsTable = ...
+    print(MerchantsTable)
+end)
+
+
+
+-- for k,v in getgc() do 
+
+--     if type(v) == "function" then 
+--         if tostring(getfenv(v).script) == "Traveling Merchant" and debug.getinfo(v).name == "updateUI" then 
+--             for k,v in getupvalues(v)[10] do print(k,v) end
+--         end
+--     end
+-- end
+
+-- local a = getsenv(game.Players.LocalPlayer.PlayerScripts.Scripts.Game.Machines["Traveling Merchant"]).updateUI
+-- print(a)
+-- for k,v in getupvalues(a) do print(k,v) end
+local plr = game.Players.LocalPlayer
+local MerchantUtil = require(game.ReplicatedStorage.Library.Util.MerchantUtil)
+local SaveModule = require(game.ReplicatedStorage.Library.Client.Save)
+-- for k,v in SaveModule.GetSaves()[plr].MerchantExperience do print(k,v) end
+-- print()
+-- for k,v in getgc() do 
+
+--     if type(v) == "function" then 
+--         if tostring(getfenv(v).script) == "Traveling Merchant" and debug.getinfo(v).name == "updateUI" then 
+-- --print(getupvalues(v)[1].Save:Get("ExperienceFromRespectLevel"))
+--             -- for k,v in getupvalues(v)[1].Save.GetSaves() do 
+--             --     warn(k,v)
+--             --     for k,v in v do print(k,v.MerchantExperience) end
+--             --     break
+--             -- end
+--            --for k,v i
+--            -- print(getupvalues(v)[1].TabController:Get("ExperienceFromRespectLevel"))
+--         end
+--     end
+-- end
+
+
+SetFeatureFunction("AutoMerchant",function() 
+    while wait(1) do --AdvancedMerchant.Offers["1"].PriceData.data
+        if MerchantsTable and type(MerchantsTable) == "table" then 
+            print("Got heare")
+            for k,v in ListMerchant do
+                local MerchantName = k
+                if v and MerchantsTable[k] then 
+                    for k,v in MerchantsTable[k].Offers do 
+                        if v.Stock > 0 then 
+                            local PlayerExp = SaveModule.GetSaves()[plr].MerchantExperience[MerchantName] or 1
+                            local PlayerRespect = MerchantUtil.RespectLevelFromExperience(PlayerExp)
+                            if PlayerRespect >= v.Respect then 
+                                if plr.leaderstats["\240\159\146\142 Diamonds"].Value >= v.PriceData.data._am then 
+                                    if plr:DistanceFromCharacter(MerchantInfo[MerchantName].Position.p) > 100 then 
+                                        StoppedTp = true
+                                        TP(MerchantInfo[MerchantName].Position)
+                                        wait(1)
+                                    end
+                                    game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Merchant_RequestPurchase"):InvokeServer(MerchantName,tonumber(k))
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        elseif MerchantsTable == nil then
+            for k,v in ListMerchant do
+                local MerchantName = k
+                if v then 
+                    if plr:DistanceFromCharacter(MerchantInfo[MerchantName].Position.p) > 100 then 
+                        StoppedTp = true
+                        TP(MerchantInfo[MerchantName].Position)
+                        wait(1)
+                    end
+                    local Break 
+                    for i = 1,6 do 
+                        if game:GetService("ReplicatedStorage"):WaitForChild("Network"):WaitForChild("Merchant_RequestPurchase"):InvokeServer(MerchantName,i) then Break = true break end
+                    end
+                    if Break then break end
+                end
+            end
+            -- if MerchantTable == nil then 
+            --     MerchantsTable = true
+            -- end
+        else
+           --print(MerchantsTable)
+        end
+        StoppedTp = false
+    end
+    StoppedTp = false
+end).ForceStoped = function() 
+    StoppedTp = false
+end
+local Page1 = Main.CreatePage({Page_Name = 'Buy Item', Page_Title = 'Main Tab'})
+
+
+local Page1 = Main.CreatePage({Page_Name = 'Auto Farm', Page_Title = 'Main Tab'})
+local Section11 = Page1.CreateSection('Main')
+
+Section11.CreateToggle({Title = 'Auto Farm',Desc="Will auto farm in your selected map", Default = Settings.FarmCoin}, function(v)
+    SetFeatureState("FarmCoin",v)
+ end)
+ Section11.CreateToggle({Title = 'Auto Tap',Desc="Will auto tap in farming coin", Default = Settings.AutoTap}, function(v)
+    Settings.AutoTap = v
+ end)
+
+Section11.CreateToggle({Title = 'Ultra Boost FPS',Desc="Will boost your fps (Only For Field Farm, Cannot disable, not work in engine method)", Default = Settings.UltraBoost}, function(v)
+    Settings.UltraBoost = v
+end)
+
+
+Section11.CreateDropdown({Title = 'Select Map', List = MapNames, Selected = false}, function(v)
+    Settings.FarmMap = v
+end)
+
+Section11.CreateDropdown({Title = 'Farming Mode', List = {"All"}, Selected = false}, function(v)
+    Settings.FarmingMode = v
+end)
+Section11.CreateDropdown({Title = 'Farming Method', List = {"Script","Engine"},Default = "Script", Selected = false}, function(v)
+    Settings.FarmingMethod = v
+end)
+Section11.CreateLabel({Title = "Method Script: Use CTE HUB implemented farm function (recommended in low level farm like vip area) \nMethod Engine: Use game built in Farm Method with pet instant tp (Not work with Ultra Boost FPS)"})
+
+-- local Page1 = Main.CreatePage({Page_Name = 'Auto Rank', Page_Title = 'Main Tab'})
+-- local Section11 = Page1.CreateSection('Main')
+
+-- Section11.CreateToggle({Title = 'Auto Rank',Desc = "Auto farm rank", Default = Settings.AutoRank}, function(v)
+--    SetFeatureState("AutoRank",v)
+-- end)
+
+-- 2 ^ 10 = 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2
+-- = (2 * 2 * 2 * 2 * 2 ) ^ 2
+-- = ((2*2)^2 * 2)^2
+
+workspace.ALWAYS_RENDERING:Destroy()
